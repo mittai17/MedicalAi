@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "android-kotlin-development": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "skillPath": "skills/android-kotlin-development/SKILL.md",
+      "computedHash": "9b39cad777a0d84b87b9c8093d700b2e4339691e5cf5fb99ccf9a832c9fe4fe1"
+    }
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "task": "multiclass",
+  "n_classes": 4,
+  "accuracy": 0.605,
+  "macro_precision": 0.7767156549293773,
+  "macro_recall": 0.605,
+  "macro_f1": 0.5547049646164518,
+  "per_class_f1": [
+    0.6161490683229813,
+    0.47878787878787876,
+    0.30201342281879195,
+    0.8218694885361552
+  ],
+  "confusion_matrix": [
+    [
+      248,
+      0,
+      0,
+      2
+    ],
+    [
+      152,
+      79,
+      0,
+      19
+    ],
+    [
+      142,
+      0,
+      45,
+      63
+    ],
+    [
+      13,
+      1,
+      3,
+      233
+    ]
+  ],
+  "confidence_gating": {
+    "0.0": {
+      "coverage": 1.0,
+      "accuracy": 0.605
+    },
+    "0.3": {
+      "coverage": 1.0,
+      "accuracy": 0.605
+    },
+    "0.5": {
+      "coverage": 0.982,
+      "accuracy": 0.611
+    },
+    "0.7": {
+      "coverage": 0.826,
+      "accuracy": 0.661
+    },
+    "0.8": {
+      "coverage": 0.76,
+      "accuracy": 0.6816
+    },
+    "0.9": {
+      "coverage": 0.661,
+      "accuracy": 0.711
+    }
+  },
+  "labels": [
+    "CNV",
+    "DME",
+    "Drusen",
+    "Normal"
+  ],
+  "name": "Retina OCT"
+}

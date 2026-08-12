@@ -1,0 +1,16 @@
+# Python / ML
+ml/.venv/
+ml/data/
+ml/__pycache__/
+*.pyc
+
+# Android
+.gradle/
+build/
+**/build/
+.idea/
+*.iml
+local.properties
+.kotlin/
+*.log
+.DS_Store

@@ -1,0 +1,30 @@
+{
+  "model": "mobilenet_v3_small_ft",
+  "input": [
+    28,
+    28,
+    1
+  ],
+  "resize": 128,
+  "classes": [
+    "Normal",
+    "Pneumonia"
+  ],
+  "threshold": 0.7500000000000002,
+  "accuracy": 0.6987179487179487,
+  "precision": 0.6759581881533101,
+  "recall_sensitivity": 0.9948717948717949,
+  "f1": 0.8049792531120332,
+  "auroc": 0.7864781941705018,
+  "confusion_matrix": [
+    [
+      48,
+      186
+    ],
+    [
+      2,
+      388
+    ]
+  ],
+  "train_time_s": 157.8
+}

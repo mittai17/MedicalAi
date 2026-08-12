@@ -1,0 +1,29 @@
+{
+  "task": "binary",
+  "threshold": 0.19,
+  "auroc_test": 0.8290357033872443,
+  "sensitivity": 0.915929203539823,
+  "precision": 0.7638376383763837,
+  "f1": 0.8329979879275654,
+  "accuracy": 0.7925,
+  "confusion_matrix": [
+    [
+      110,
+      64
+    ],
+    [
+      19,
+      207
+    ]
+  ],
+  "prob_range": [
+    0.00347984884865582,
+    0.9996964931488037
+  ],
+  "prob_std": 0.3504785895347595,
+  "labels": [
+    "no DR",
+    "DR present"
+  ],
+  "name": "Retina (DR)"
+}

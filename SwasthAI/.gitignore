@@ -1,0 +1,29 @@
+# Gradle
+.gradle/
+build/
+**/build/
+
+# Android Studio / IntelliJ
+.idea/
+*.iml
+
+# Local configuration
+local.properties
+
+# Kotlin
+.kotlin/
+
+# Logs
+*.log
+
+# JDK
+jdk*/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# AI / local tools
+Plan/
+
+Demo/

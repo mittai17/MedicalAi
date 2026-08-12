@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">SwasthAI</string>
+    <string name="app_tagline">Your Health, In Your Hands</string>
+    <string name="app_subtitle">Offline · Private · Trusted</string>
+
+    <!-- Onboarding -->
+    <string name="get_started">Get Started</string>
+    <string name="learn_more">Learn More</string>
+    <string name="continue_text">Continue</string>
+    <string name="choose_language">Choose Your Language</string>
+    <string name="choose_role">Choose Your Role</string>
+
+    <!-- Roles -->
+    <string name="citizen">Citizen</string>
+    <string name="citizen_desc">Self Screening</string>
+    <string name="health_worker">Health Worker</string>
+    <string name="health_worker_desc">ASHA / CHW</string>
+
+    <!-- Auth -->
+    <string name="login">Login</string>
+    <string name="login_offline">Login Offline</string>
+    <string name="register">Register New Account</string>
+    <string name="forgot_password">Forgot Password?</string>
+    <string name="mobile_number">Mobile Number</string>
+    <string name="password">Password</string>
+    <string name="full_name">Full Name</string>
+
+    <!-- Dashboard -->
+    <string name="good_morning">Good Morning</string>
+    <string name="good_afternoon">Good Afternoon</string>
+    <string name="good_evening">Good Evening</string>
+    <string name="offline_mode">Offline Mode</string>
+    <string name="online">Online</string>
+    <string name="quick_actions">Quick Actions</string>
+    <string name="recent_screenings">Recent Screenings</string>
+
+    <!-- Quick Actions -->
+    <string name="symptom_check">Symptom Check</string>
+    <string name="image_check">Image Check</string>
+    <string name="voice_assistant">Voice Assistant</string>
+    <string name="vitals">Vitals</string>
+    <string name="health_records">Health Records</string>
+    <string name="health_tips">Health Tips</string>
+
+    <!-- Screening -->
+    <string name="symptom_check_title">Symptom Check</string>
+    <string name="what_is_your_problem">What is your main problem?</string>
+    <string name="select_one_or_more">Select one or more</string>
+    <string name="how_long_experiencing">How long have you been experiencing this?</string>
+    <string name="any_other_symptoms">Any other symptoms?</string>
+    <string name="type_or_speak">Type or speak…</string>
+    <string name="next">Next</string>
+    <string name="back">Back</string>
+
+    <!-- Symptoms -->
+    <string name="fever">Fever</string>
+    <string name="cough">Cough</string>
+    <string name="body_aches">Body Aches</string>
+    <string name="fatigue_weakness">Fatigue / Weakness</string>
+    <string name="other">Other</string>
+
+    <!-- Duration -->
+    <string name="less_than_1_day">Less than 1 day</string>
+    <string name="one_to_3_days">1 – 3 days</string>
+    <string name="three_to_7_days">3 – 7 days</string>
+    <string name="more_than_7_days">More than 7 days</string>
+
+    <!-- Voice Assistant -->
+    <string name="tap_mic_speak">Tap the mic and speak about your symptoms</string>
+    <string name="keyboard_input">Keyboard Input</string>
+
+    <!-- Image Check -->
+    <string name="tap_to_capture">Tap to Capture</string>
+    <string name="choose_from_gallery">Choose from Gallery</string>
+    <string name="image_tips_lighting">Use good lighting</string>
+    <string name="image_tips_focus">Focus on the affected area</string>
+    <string name="image_tips_blur">Avoid blurred images</string>
+
+    <!-- Vitals -->
+    <string name="temperature">Temperature</string>
+    <string name="pulse">Pulse</string>
+    <string name="spo2">SpO₂</string>
+    <string name="blood_pressure">BP</string>
+    <string name="weight">Weight</string>
+    <string name="height">Height</string>
+
+    <!-- Results -->
+    <string name="screening_result">Screening Result</string>
+    <string name="recommendations">Recommendations</string>
+    <string name="confidence_score">Confidence Score</string>
+    <string name="find_nearby_center">Find Nearby Center</string>
+    <string name="call_health_worker">Call Health Worker</string>
+    <string name="save_report">Save Report</string>
+
+    <!-- Risk Levels -->
+    <string name="low_risk">Low</string>
+    <string name="moderate_risk">Moderate</string>
+    <string name="high_risk">High</string>
+
+    <!-- Connect -->
+    <string name="connect">Connect</string>
+    <string name="find_nearby_health_centers">Find Nearby Health Centers</string>
+    <string name="locate_phcs">Locate PHCs, Clinics &amp; Hospitals</string>
+    <string name="contact_asha">Contact ASHA / Health Worker</string>
+    <string name="emergency_services">Emergency Services</string>
+    <string name="call_108">Call 108 or Emergency Helpline</string>
+    <string name="online_consultation">Online Consultation</string>
+    <string name="when_internet_available">When Internet Available</string>
+
+    <!-- Records -->
+    <string name="screenings">Screenings</string>
+    <string name="reports">Reports</string>
+    <string name="view_all_records">View All Records</string>
+
+    <!-- Share -->
+    <string name="share_report">Share Report</string>
+    <string name="choose_format">Choose Format</string>
+    <string name="pdf_report">PDF Report</string>
+    <string name="image_png">Image (PNG)</string>
+    <string name="text_summary">Text Summary</string>
+    <string name="share_via">Share Via</string>
+    <string name="download">Download</string>
+
+    <!-- Alerts -->
+    <string name="alerts">Alerts</string>
+    <string name="reminders">Reminders</string>
+    <string name="all">All</string>
+
+    <!-- Bottom Navigation -->
+    <string name="home">Home</string>
+    <string name="records">Records</string>
+    <string name="profile">Profile</string>
+
+    <!-- Health Worker -->
+    <string name="patients">Patients</string>
+    <string name="today_overview">Today Overview</string>
+    <string name="follow_ups">Follow Ups</string>
+    <string name="referrals">Referrals</string>
+    <string name="new_screening">New Screening</string>
+    <string name="sync_data">Sync Data</string>
+    <string name="add_new_patient">+ Add New Patient</string>
+    <string name="patient_details">Patient Details</string>
+    <string name="overview">Overview</string>
+    <string name="history">History</string>
+    <string name="save_screening">Save Screening</string>
+    <string name="view_full_details">View Full Details</string>
+    <string name="schedule_follow_up">Schedule Follow-up</string>
+    <string name="refer_to_phc">Refer to PHC / Hospital</string>
+    <string name="call_doctor">Call Doctor</string>
+    <string name="no_action_needed">No Action Needed</string>
+    <string name="refer_now">Refer Now</string>
+    <string name="save_schedule">Save Schedule</string>
+    <string name="export_report">Export Report</string>
+    <string name="sync_now">Sync Now</string>
+    <string name="sync_settings">Sync Settings</string>
+    <string name="ready_to_sync">Ready to Sync</string>
+    <string name="edit_profile">Edit Profile</string>
+    <string name="settings">Settings</string>
+    <string name="language">Language</string>
+    <string name="app_theme">App Theme</string>
+    <string name="change_password">Change Password</string>
+    <string name="privacy_policy">Privacy Policy</string>
+    <string name="help_support">Help &amp; Support</string>
+    <string name="logout">Logout</string>
+    <string name="chat_with_support">Chat with Support</string>
+
+    <!-- General -->
+    <string name="cancel">Cancel</string>
+    <string name="save">Save</string>
+    <string name="delete">Delete</string>
+    <string name="edit">Edit</string>
+    <string name="search">Search</string>
+    <string name="loading">Loading…</string>
+    <string name="no_data">No data available</string>
+    <string name="retry">Retry</string>
+    <string name="error_occurred">An error occurred</string>
+    <string name="select_date">Select Date</string>
+    <string name="select_time">Select Time</string>
+    <string name="notes_optional">Notes (Optional)</string>
+</resources>

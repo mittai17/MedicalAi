@@ -1,0 +1,30 @@
+{
+  "task": "binary",
+  "threshold": 0.39,
+  "auroc_test": 0.8396907740819856,
+  "sensitivity": 0.8938053097345132,
+  "precision": 0.7829457364341085,
+  "f1": 0.8347107438016529,
+  "accuracy": 0.8,
+  "confusion_matrix": [
+    [
+      118,
+      56
+    ],
+    [
+      24,
+      202
+    ]
+  ],
+  "prob_range": [
+    0.009744687005877495,
+    0.955210268497467
+  ],
+  "prob_std": 0.32814207673072815,
+  "labels": [
+    "no DR",
+    "DR present"
+  ],
+  "name": "Retina (DR)",
+  "input_size": 224
+}

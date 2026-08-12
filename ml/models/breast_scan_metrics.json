@@ -1,0 +1,29 @@
+{
+  "task": "binary",
+  "threshold": 0.09,
+  "auroc_test": 0.8911862990810359,
+  "sensitivity": 0.8809523809523809,
+  "precision": 0.47435897435897434,
+  "f1": 0.6166666666666667,
+  "accuracy": 0.7051282051282052,
+  "confusion_matrix": [
+    [
+      73,
+      41
+    ],
+    [
+      5,
+      37
+    ]
+  ],
+  "prob_range": [
+    5.688524652214255e-06,
+    0.9992684721946716
+  ],
+  "prob_std": 0.37662023305892944,
+  "labels": [
+    "malignant",
+    "normal/benign"
+  ],
+  "name": "Breast Ultrasound"
+}

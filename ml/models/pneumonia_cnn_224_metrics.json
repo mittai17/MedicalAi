@@ -1,0 +1,30 @@
+{
+  "task": "binary",
+  "threshold": 0.28,
+  "auroc_test": 0.9598838483453869,
+  "sensitivity": 0.9871794871794872,
+  "precision": 0.8226495726495726,
+  "f1": 0.8974358974358975,
+  "accuracy": 0.8589743589743589,
+  "confusion_matrix": [
+    [
+      151,
+      83
+    ],
+    [
+      5,
+      385
+    ]
+  ],
+  "prob_range": [
+    4.581419489113614e-06,
+    0.9999088048934937
+  ],
+  "prob_std": 0.40255850553512573,
+  "labels": [
+    "Pneumonia",
+    "Normal"
+  ],
+  "name": "Pneumonia",
+  "input_size": 224
+}
