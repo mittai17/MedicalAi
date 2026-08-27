@@ -125,7 +125,6 @@ data class BottomNavItem(
  */
 val citizenBottomNavItems = listOf(
     BottomNavItem("citizen_dashboard", "Home", Icons.Filled.Home, Icons.Outlined.Home),
-    BottomNavItem("health_records", "Records", Icons.Filled.Description, Icons.Outlined.Description),
     BottomNavItem("connect_providers", "Connect", Icons.Filled.Favorite, Icons.Outlined.FavoriteBorder),
     BottomNavItem("alerts_reminders", "Alerts", Icons.Filled.Notifications, Icons.Outlined.Notifications),
     BottomNavItem("citizen_profile", "Profile", Icons.Filled.Person, Icons.Outlined.Person)

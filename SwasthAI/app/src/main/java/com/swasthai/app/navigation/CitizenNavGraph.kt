@@ -39,8 +39,6 @@ fun NavGraphBuilder.citizenNavGraph(navController: NavHostController) {
             onSymptomCheck = { navController.navigate(Screen.SymptomCheck.route) },
             onVoiceAssistant = { navController.navigate(Screen.VoiceAssistant.route) },
             onImageCheck = { navController.navigate(Screen.ImageCheck.route) },
-            onVitalsInput = { navController.navigate(Screen.VitalsInput.route) },
-            onHealthRecords = { navController.navigate(Screen.HealthRecords.route) },
             onHealthTips = { navController.navigate(Screen.HealthTips.route) },
             onConnectProviders = { navController.navigate(Screen.ConnectProviders.route) },
             onAlertsReminders = { navController.navigate(Screen.AlertsReminders.route) },

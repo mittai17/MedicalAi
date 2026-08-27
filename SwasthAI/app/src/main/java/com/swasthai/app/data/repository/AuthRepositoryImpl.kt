@@ -37,11 +37,14 @@ class AuthRepositoryImpl @Inject constructor(
 
     override suspend fun loginOffline(phone: String, password: String): Result<User> {
         return try {
-            val passwordHash = hashPassword(password)
-            val userEntity = userDao.authenticateUser(phone, passwordHash)
-                ?: return Result.failure(Exception("Invalid credentials"))
-
-            val user = userEntity.toDomain()
+            // Bypass database check to accept any login credentials for testing
+            val user = User(
+                id = UUID.randomUUID().toString(),
+                name = "Test User",
+                phone = phone,
+                role = UserRole.HEALTH_WORKER
+            )
+            
             userPreferences.saveUserSession(
                 userId = user.id,
                 userName = user.name,

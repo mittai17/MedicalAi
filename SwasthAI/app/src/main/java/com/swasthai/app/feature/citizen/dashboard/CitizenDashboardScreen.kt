@@ -41,8 +41,6 @@ fun CitizenDashboardScreen(
     onSymptomCheck: () -> Unit,
     onVoiceAssistant: () -> Unit,
     onImageCheck: () -> Unit,
-    onVitalsInput: () -> Unit,
-    onHealthRecords: () -> Unit,
     onHealthTips: () -> Unit,
     onConnectProviders: () -> Unit,
     onAlertsReminders: () -> Unit,
@@ -75,7 +73,6 @@ fun CitizenDashboardScreen(
                 selectedRoute = "citizen_dashboard",
                 onItemClick = { route ->
                     when (route) {
-                        "health_records" -> onHealthRecords()
                         "connect_providers" -> onConnectProviders()
                         "alerts_reminders" -> onAlertsReminders()
                         "citizen_profile" -> onProfile()
@@ -104,8 +101,6 @@ fun CitizenDashboardScreen(
                     onSymptomCheck = onSymptomCheck,
                     onVoiceAssistant = onVoiceAssistant,
                     onImageCheck = onImageCheck,
-                    onVitalsInput = onVitalsInput,
-                    onHealthRecords = onHealthRecords,
                     onHealthTips = onHealthTips
                 )
             }
@@ -235,8 +230,6 @@ private fun QuickActionsSection(
     onSymptomCheck: () -> Unit,
     onVoiceAssistant: () -> Unit,
     onImageCheck: () -> Unit,
-    onVitalsInput: () -> Unit,
-    onHealthRecords: () -> Unit,
     onHealthTips: () -> Unit
 ) {
     Column(modifier = Modifier.padding(16.dp)) {
@@ -251,8 +244,6 @@ private fun QuickActionsSection(
             QuickAction(Icons.Filled.Checklist, "Symptom Check", onSymptomCheck),
             QuickAction(Icons.Filled.Mic, "Voice Assistant", onVoiceAssistant),
             QuickAction(Icons.Filled.CameraAlt, "Image Check", onImageCheck),
-            QuickAction(Icons.Filled.MonitorHeart, "Vitals", onVitalsInput),
-            QuickAction(Icons.Filled.FolderOpen, "Health Records", onHealthRecords),
             QuickAction(Icons.Filled.Lightbulb, "Health Tips", onHealthTips),
         )
 
