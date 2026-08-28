@@ -93,6 +93,29 @@ fun SplashScreen(
 fun WelcomeScreen(
     onGetStarted: () -> Unit
 ) {
+    var showInfo by remember { mutableStateOf(false) }
+
+    if (showInfo) {
+        AlertDialog(
+            onDismissRequest = { showInfo = false },
+            icon = { Icon(Icons.Filled.HealthAndSafety, null, tint = MaterialTheme.colorScheme.primary) },
+            title = { Text("About SwasthAI") },
+            text = {
+                Text(
+                    "SwasthAI is your offline health companion built on Edge AI.\n\n" +
+                        "• Works fully offline — your data stays on your device\n" +
+                        "• AI-powered health screening and symptom checks\n" +
+                        "• Multi-language support\n" +
+                        "• Private and secure\n\n" +
+                        "Note: SwasthAI provides health information and screening only, and is not a substitute for professional medical advice, diagnosis, or treatment."
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = { showInfo = false }) { Text("Got it") }
+            }
+        )
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -167,7 +190,7 @@ fun WelcomeScreen(
 
         // Learn More
         TextButton(
-            onClick = { /* TODO: Show info dialog */ },
+            onClick = { showInfo = true },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(

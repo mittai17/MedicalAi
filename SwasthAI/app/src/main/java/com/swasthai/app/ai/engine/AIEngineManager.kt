@@ -24,8 +24,19 @@ import javax.inject.Singleton
 class AIEngineManager @Inject constructor(
     private val modelLoader: ModelLoader,
     private val imageClassifier: ImageClassifier,
-    private val reasoningEngine: ClinicalReasoningEngine
+    private val reasoningEngine: ClinicalReasoningEngine,
+    private val gemmaFallback: GemmaFallbackClient,
+    private val capabilityGate: DeviceCapabilityGate
 ) {
+
+    /**
+     * Current deployment mode for this device.
+     *  - [DeviceCapabilityGate.DeviceMode.FULL] on capable (arm64) devices —
+     *    Gemma 4 E2B-IT LLM is available as fallback.
+     *  - [DeviceCapabilityGate.DeviceMode.UI_ONLY] on low-end / 32-bit devices —
+     *    primary models + RAG only; UI/QA testing.
+     */
+    fun currentMode(): DeviceCapabilityGate.DeviceMode = capabilityGate.currentMode()
 
     /**
      * Run the full AI analysis pipeline.
@@ -76,10 +87,33 @@ class AIEngineManager @Inject constructor(
             differential = getDifferentialForScan(scanType, classification)
         } else {
             // No usable image — the evidence-based reasoning engine decides.
-            predictedDisease = reasoning.predictedDisease
-            confidence = (reasoning.confidence * 100).coerceIn(0f, 99f)
-            riskLevel = reasoning.riskLevel
-            differential = reasoning.differentialDiagnosis
+            // Only on capable (arm64) devices, when the on-device primary is
+            // weak, does the Gemma 4 E2B-IT fallback get consulted. On low-end
+            // / 32-bit devices the app stays purely on-device (no LLM).
+            val fallback = if (capabilityGate.canRunOnDeviceLlm() &&
+                reasoning.confidence < 0.5f
+            ) {
+                gemmaFallback.getFallback(symptoms, vitals, voiceTranscript, scanType)
+            } else null
+
+            if (fallback != null && fallback.predictedDisease.isNotBlank()) {
+                predictedDisease = fallback.predictedDisease
+                confidence = (fallback.confidence ?: reasoning.confidence * 100f)
+                    .coerceIn(0f, 99f)
+                // Risk is bounded below by the on-device reasoning so a model
+                // second opinion can never downgrade a conservative assessment.
+                riskLevel = when (reasoning.riskLevel) {
+                    RiskLevel.HIGH -> RiskLevel.HIGH
+                    RiskLevel.MODERATE -> RiskLevel.MODERATE
+                    else -> RiskLevel.LOW
+                }
+                differential = reasoning.differentialDiagnosis
+            } else {
+                predictedDisease = reasoning.predictedDisease
+                confidence = (reasoning.confidence * 100).coerceIn(0f, 99f)
+                riskLevel = reasoning.riskLevel
+                differential = reasoning.differentialDiagnosis
+            }
         }
 
         val recommendations = if (classification != null) {

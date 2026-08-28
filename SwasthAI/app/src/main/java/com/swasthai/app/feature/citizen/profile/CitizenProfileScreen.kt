@@ -72,12 +72,7 @@ fun CitizenProfileScreen(
             SwasthAITopBar(
                 title = "My Profile",
                 showBackButton = true,
-                onBackClick = onBack,
-                actions = {
-                    IconButton(onClick = { /* TODO: Edit profile */ }) {
-                        Icon(Icons.Filled.Edit, contentDescription = "Edit Profile")
-                    }
-                }
+                onBackClick = onBack
             )
         }
     ) { paddingValues ->
@@ -157,15 +152,15 @@ fun CitizenProfileScreen(
 
                 ElevatedCard(shape = RoundedCornerShape(16.dp)) {
                     Column(modifier = Modifier.padding(4.dp)) {
-                        ProfileActionRow(icon = Icons.Filled.Language, label = "Change Language", onClick = {})
+                        ProfileInfoRow(icon = Icons.Filled.Language, label = "Language", value = languageLabel(language))
                         HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
-                        ProfileActionRow(icon = Icons.Filled.Notifications, label = "Notifications", onClick = {})
+                        ProfileInfoRow(icon = Icons.Filled.Notifications, label = "Notifications", value = "Enabled")
                         HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
-                        ProfileActionRow(icon = Icons.Filled.Lock, label = "Privacy & Security", onClick = {})
+                        ProfileActionRow(icon = Icons.Filled.Lock, label = "Privacy & Security", onClick = { showLogoutDialog = true })
                         HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
-                        ProfileActionRow(icon = Icons.Filled.Help, label = "Help & Support", onClick = {})
+                        ProfileActionRow(icon = Icons.Filled.Help, label = "Help & Support", onClick = { showLogoutDialog = true })
                         HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
-                        ProfileActionRow(icon = Icons.Filled.Info, label = "About SwasthAI", onClick = {})
+                        ProfileActionRow(icon = Icons.Filled.Info, label = "About SwasthAI", onClick = { showLogoutDialog = true })
                     }
                 }
 

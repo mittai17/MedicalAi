@@ -69,9 +69,10 @@ fun VoiceAssistantScreen(
             // Instruction text
             Text(
                 text = "Tap the mic and speak about your symptoms",
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.titleLarge,
                 textAlign = TextAlign.Center,
-                fontWeight = FontWeight.SemiBold,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.padding(horizontal = 32.dp)
             )
 
@@ -302,8 +303,9 @@ private fun VoiceTipsCard() {
                     Text("•", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
                     Text(
                         text = tip,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        fontWeight = FontWeight.Medium
                     )
                 }
             }

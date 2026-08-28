@@ -63,6 +63,23 @@
             </intent-filter>
         </activity>
 
+        <!-- Debug-only: on-device model verifier (not a launcher) -->
+        <activity
+            android:name=".debug.ModelVerifierActivity"
+            android:exported="true"
+            android:theme="@style/Theme.SwasthAI" />
+
+        <!-- FileProvider for camera capture (TakePicture contract) -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
         <!-- WorkManager initializer for Hilt integration -->
         <provider
             android:name="androidx.startup.InitializationProvider"

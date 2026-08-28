@@ -1,5 +1,7 @@
 package com.swasthai.app.feature.healthworker.patients
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -39,6 +41,7 @@ fun PatientDetailScreen(
     viewModel: PatientViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.detailUiState.collectAsState()
+    val context = androidx.compose.ui.platform.LocalContext.current
 
     LaunchedEffect(patientId) { viewModel.loadPatientDetail(patientId) }
 
@@ -107,7 +110,6 @@ fun PatientDetailScreen(
                     ) {
                         QuickStatCard("Screenings", patient.screeningCount.toString(), Icons.Filled.HealthAndSafety, SwasthAIColors.RiskLow, Modifier.weight(1f))
                         QuickStatCard("Visits", patient.visitCount.toString(), Icons.Filled.LocalHospital, MaterialTheme.colorScheme.primary, Modifier.weight(1f))
-                        QuickStatCard("Referrals", "0", Icons.Filled.TransferWithinAStation, SwasthAIColors.RiskModerate, Modifier.weight(1f))
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
@@ -121,7 +123,11 @@ fun PatientDetailScreen(
                         )
                         if (patient.phone != null) {
                             OutlinedButton(
-                                onClick = { /* TODO: dial phone */ },
+                                onClick = {
+                                    context.startActivity(
+                                        Intent(Intent.ACTION_DIAL, Uri.parse("tel:${patient.phone}"))
+                                    )
+                                },
                                 modifier = Modifier.fillMaxWidth().height(52.dp),
                                 shape = RoundedCornerShape(12.dp)
                             ) {

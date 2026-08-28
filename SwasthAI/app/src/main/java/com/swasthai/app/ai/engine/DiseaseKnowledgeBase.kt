@@ -798,12 +798,18 @@ object DiseaseKnowledgeBase {
     }
 
     /**
+     * Expose all knowledge-base entries for on-device RAG indexing.
+     * Returns (normalized condition key, MedicalAdvice) pairs.
+     */
+    fun allEntries(): List<Pair<String, MedicalAdvice>> =
+        entries.map { (key, advice) -> key to advice }
+
+    /**
      * Look up medical advice for a predicted condition.
      * Matching is case-insensitive and tolerant of the small label variants
      * used across models (e.g. "Adenocarcinoma" vs "CA Stroma").
      */
-    fun adviceFor(condition: String): MedicalAdvice {
-        val key = condition.trim().lowercase().replace('_', ' ')
+    fun adviceFor(condition: String): MedicalAdvice {        val key = condition.trim().lowercase().replace('_', ' ')
         val direct = entries[key] ?: entries[key.replace(' ', '_')]
         if (direct != null) return direct
 

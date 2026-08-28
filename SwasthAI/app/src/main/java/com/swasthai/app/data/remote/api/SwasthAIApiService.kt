@@ -64,4 +64,10 @@ interface SwasthAIApiService {
     // ── Sync ──
     @POST("sync/batch")
     suspend fun syncBatch(@Body body: List<Map<String, Any?>>): retrofit2.Response<Map<String, Any>>
+
+    // ── AI Fallback (remote Gemma second opinion) ──
+    @POST("ai/fallback")
+    suspend fun getAiFallback(
+        @Body body: Map<String, Any?>
+    ): retrofit2.Response<Map<String, Any>>
 }

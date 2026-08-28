@@ -68,6 +68,39 @@ fun HealthRecordsScreen(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) { CircularProgressIndicator() }
+            } else if (uiState.error != null) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        modifier = Modifier.padding(24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Icon(
+                            Icons.Filled.ErrorOutline,
+                            null,
+                            modifier = Modifier.size(56.dp),
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                        Text(
+                            "Couldn't load your records",
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        Text(
+                            uiState.error ?: "Something went wrong.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        )
+                        Button(onClick = { viewModel.retry() }) {
+                            Icon(Icons.Filled.Refresh, null, modifier = Modifier.size(18.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Retry")
+                        }
+                    }
+                }
             } else {
                 when (uiState.selectedTabIndex) {
                     0 -> ScreeningsTab(

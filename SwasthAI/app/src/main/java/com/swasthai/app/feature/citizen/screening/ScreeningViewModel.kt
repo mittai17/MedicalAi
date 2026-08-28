@@ -142,6 +142,46 @@ class ScreeningViewModel @Inject constructor(
     fun updateWeight(value: String) { _uiState.update { it.copy(weight = value) } }
     fun updateHeight(value: String) { _uiState.update { it.copy(height = value) } }
 
+    private fun validateVitals(
+        temperature: String,
+        pulse: String,
+        spo2: String,
+        bpSystolic: String,
+        bpDiastolic: String,
+        weight: String,
+        height: String
+    ): String? {
+        fun parse(s: String): Double? = s.trim().toDoubleOrNull()
+
+        parse(temperature)?.let {
+            if (it < 30.0 || it > 43.0) return "Temperature looks unusual (expected 30–43°C). Please check the value."
+        }
+        parse(pulse)?.let {
+            if (it < 20.0 || it > 220.0) return "Pulse rate looks unusual (expected 20–220 bpm). Please check the value."
+        }
+        parse(spo2)?.let {
+            if (it < 50.0 || it > 100.0) return "SpO₂ should be between 50–100%. Please check the value."
+        }
+        val sys = parse(bpSystolic)
+        val dia = parse(bpDiastolic)
+        sys?.let {
+            if (it < 50.0 || it > 260.0) return "Systolic BP looks unusual (expected 50–260 mmHg). Please check the value."
+        }
+        dia?.let {
+            if (it < 30.0 || it > 160.0) return "Diastolic BP looks unusual (expected 30–160 mmHg). Please check the value."
+        }
+        if (sys != null && dia != null && dia >= sys) {
+            return "Diastolic BP should be lower than systolic BP."
+        }
+        parse(weight)?.let {
+            if (it < 2.0 || it > 300.0) return "Weight looks unusual (expected 2–300 kg). Please check the value."
+        }
+        parse(height)?.let {
+            if (it < 50.0 || it > 250.0) return "Height looks unusual (expected 50–250 cm). Please check the value."
+        }
+        return null
+    }
+
     // ── Voice assistant ──
 
     fun updateVoiceTranscript(text: String) {
@@ -170,8 +210,21 @@ class ScreeningViewModel @Inject constructor(
                 ScreeningStep.SYMPTOM_SELECTION -> state.copy(currentStep = ScreeningStep.DURATION_SELECTION)
                 ScreeningStep.DURATION_SELECTION -> state.copy(currentStep = ScreeningStep.VITALS_INPUT)
                 ScreeningStep.VITALS_INPUT -> {
-                    runDiagnosis()
-                    state.copy(currentStep = ScreeningStep.PROCESSING)
+                    val validationError = validateVitals(
+                        state.temperature,
+                        state.pulse,
+                        state.spo2,
+                        state.bloodPressureSystolic,
+                        state.bloodPressureDiastolic,
+                        state.weight,
+                        state.height
+                    )
+                    if (validationError != null) {
+                        state.copy(errorMessage = validationError)
+                    } else {
+                        runDiagnosis()
+                        state.copy(currentStep = ScreeningStep.PROCESSING)
+                    }
                 }
                 else -> state
             }
@@ -362,5 +415,12 @@ class ScreeningViewModel @Inject constructor(
 
     fun clearError() {
         _uiState.update { it.copy(errorMessage = null) }
+    }
+
+    /**
+     * Show a non-fatal informational message (e.g. camera permission denied).
+     */
+    fun setScreeningMessage(message: String?) {
+        _uiState.update { it.copy(errorMessage = message) }
     }
 }

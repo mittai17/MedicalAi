@@ -24,7 +24,8 @@ data class RecordsUiState(
     val screenings: List<ScreeningRecord> = emptyList(),
     val reports: List<Report> = emptyList(),
     val isLoading: Boolean = true,
-    val selectedTabIndex: Int = 0
+    val selectedTabIndex: Int = 0,
+    val error: String? = null
 )
 
 data class ScreeningRecord(
@@ -57,17 +58,29 @@ class RecordsViewModel @Inject constructor(
     private fun loadRecords() {
         viewModelScope.launch {
             val userId = userPreferences.userIdFlow.first() ?: ""
-            combine(
-                screeningRepository.getScreeningsByUser(userId),
-                reportRepository.getAllReports()
-            ) { screenings, reports ->
-                RecordsUiState(
-                    screenings = screenings.map { it.toRecord() },
-                    reports = reports,
-                    isLoading = false
+            _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+            try {
+                combine(
+                    screeningRepository.getScreeningsByUser(userId),
+                    reportRepository.getAllReports()
+                ) { screenings, reports ->
+                    RecordsUiState(
+                        screenings = screenings.map { it.toRecord() },
+                        reports = reports,
+                        isLoading = false
+                    )
+                }.collect { _uiState.value = it }
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    error = e.message ?: "Could not load your health records."
                 )
-            }.collect { _uiState.value = it }
+            }
         }
+    }
+
+    fun retry() {
+        loadRecords()
     }
 
     fun selectTab(index: Int) {

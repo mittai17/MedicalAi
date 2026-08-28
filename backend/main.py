@@ -8,6 +8,9 @@ from typing import List, Dict, Any
 
 from .database import engine, Base, get_db
 from . import models, schemas
+import json
+import os
+import urllib.request
 
 # Initialize database tables
 Base.metadata.create_all(bind=engine)
@@ -315,5 +318,123 @@ def sync_batch(body: List[Dict[str, Any]], db: Session = Depends(get_db)):
         "processed_count": processed_count,
         "errors": errors
     }
+
+# ── AI Fallback (Low-end friendly) ──
+#
+# The SwasthAI app is offline-first: inference runs on-device (TFLite + the
+# reasoning engine) so it works on low-end phones with no big model download.
+# When the on-device engine is uncertain, the app may optionally consult this
+# endpoint for an LLM-assisted second opinion.
+#
+# If GEMMA_API_KEY is set, this calls a hosted Gemma (Gemini-compatible)
+# endpoint. Otherwise (or on failure) it returns a safe, structured fallback
+# derived from rule-based reasoning so the app always receives a valid reply.
+#
+# Configure via env vars:
+#   GEMMA_API_KEY     - API key for the hosted Gemma model
+#   GEMMA_BASE_URL    - endpoint base (default: Gemini API)
+#   GEMMA_MODEL       - model id (default: Gemma 4 E2B-IT, the light on-device
+#                       multimodal Gemma used as the app's LLM fallback)
+
+GEMMA_API_KEY = os.environ.get("GEMMA_API_KEY", "")
+GEMMA_BASE_URL = os.environ.get("GEMMA_BASE_URL", "https://generativelanguage.googleapis.com")
+GEMMA_MODEL = os.environ.get("GEMMA_MODEL", "gemma-4-e2b-it")
+
+@router.post("/ai/fallback")
+def ai_fallback(body: Dict[str, Any]):
+    symptoms = body.get("symptoms", [])
+    vitals = body.get("vitals") or {}
+    transcript = body.get("voiceTranscript") or ""
+    scan_type = body.get("scanType", "SYMPTOM_CHECK")
+
+    symptom_names = ", ".join(symptoms) if symptoms else (transcript or "General symptoms")
+    temperature = vitals.get("temperature")
+    spo2 = vitals.get("spo2")
+    pulse = vitals.get("pulse")
+
+    # 1) Try the hosted Gemma model when configured.
+    llm_result = None
+    if GEMMA_API_KEY:
+        try:
+            llm_result = _call_gemma(symptom_names, scan_type, temperature, spo2, pulse)
+        except Exception:
+            llm_result = None
+
+    # 2) Graceful structured fallback.
+    if llm_result:
+        return {**llm_result, "provider": "gemma-remote"}
+    return {
+        "predictedDisease": _fallback_disease(symptoms, transcript),
+        "advice": _fallback_advice(temperature, spo2, pulse),
+        "note": "Using built-in fallback reasoning (no Gemma API key configured).",
+        "provider": "fallback-rules",
+        "confidence": 0.5
+    }
+
+
+def _call_gemma(symptom_text: str, scan_type: str, temperature, spo2, pulse) -> Dict[str, Any] | None:
+    url = f"{GEMMA_BASE_URL}/v1beta/models/{GEMMA_MODEL}:generateContent"
+    payload = {
+        "contents": [{
+            "parts": [{
+                "text": (
+                    "You are a medical triage screener for SwasthAI, a community health "
+                    "app. Keep answers brief, non-diagnostic, and in plain language. "
+                    f"Symptoms: {symptom_text}. Scan type: {scan_type}. "
+                    f"Vitals: temp={temperature}, spo2={spo2}%, pulse={pulse}. "
+                    "Reply as JSON with keys predictedDisease (string), "
+                    "advice (string), risk (low|moderate|high)."
+                )
+            }]
+        }],
+        "generationConfig": {"temperature": 0.2, "maxOutputTokens": 300}
+    }
+    req = urllib.request.Request(
+        url,
+        data=json.dumps(payload).encode(),
+        headers={"Content-Type": "application/json",
+                 "x-goog-api-key": GEMMA_API_KEY},
+        method="POST"
+    )
+    with urllib.request.urlopen(req, timeout=20) as resp:
+        data = json.loads(resp.read().decode())
+    text = (data.get("candidates") or [{}])[0].get("content", {}).get("parts", [{}])[0].get("text", "")
+    return _parse_llm_json(text)
+
+
+def _parse_llm_json(text: str) -> Dict[str, Any] | None:
+    try:
+        start = text.find("{")
+        end = text.rfind("}")
+        if start != -1 and end != -1 and end > start:
+            return json.loads(text[start:end + 1])
+    except Exception:
+        pass
+    return None
+
+
+def _fallback_disease(symptoms: list, transcript: str) -> str:
+    for s in symptoms:
+        low = str(s).lower()
+        if "fever" in low or "temperature" in low:
+            return "Possible Fever / Viral Infection"
+        if "cough" in low or "breath" in low:
+            return "Possible Respiratory Infection"
+        if "rash" in low:
+            return "Possible Skin Condition"
+    if transcript:
+        return "Symptoms noted — see advice below"
+    return "General health concern"
+
+
+def _fallback_advice(temperature, spo2, pulse) -> str:
+    notes = []
+    if temperature is not None and temperature >= 38.0:
+        notes.append("You may have a fever; keep hydrated and rest.")
+    if spo2 is not None and spo2 < 94:
+        notes.append("Your oxygen level is low — seek help soon.")
+    if pulse is not None and (pulse > 120 or pulse < 50):
+        notes.append("Your heart rate is outside the normal range.")
+    return " ".join(notes) or "Monitor symptoms and visit a health centre if they worsen."
 
 app.include_router(router)

@@ -18,6 +18,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.work.WorkManager
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.swasthai.app.core.components.SwasthAIPrimaryButton
 import com.swasthai.app.core.components.SwasthAITopBar
 import com.swasthai.app.core.theme.SwasthAIColors
@@ -39,12 +40,14 @@ import java.util.*
 @Composable
 fun SyncDataScreen(
     isOnline: Boolean,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    viewModel: SyncDataViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
-    var isSyncing by remember { mutableStateOf(false) }
-    var lastSyncTime by remember { mutableStateOf(System.currentTimeMillis() - 3600_000L) }
-    val pendingCount by remember { mutableIntStateOf(7) }
+    val uiState by viewModel.uiState.collectAsState()
+    val pendingCount by viewModel.pending.collectAsState()
+    val isSyncing = uiState.isSyncing
+    var lastSyncTime by remember { mutableLongStateOf(System.currentTimeMillis()) }
 
     // Rotating animation when syncing
     val infiniteTransition = rememberInfiniteTransition(label = "sync_rotate")
@@ -134,10 +137,8 @@ fun SyncDataScreen(
             Button(
                 onClick = {
                     if (isOnline) {
-                        isSyncing = true
-                        SyncWorker.enqueueImmediateSync(WorkManager.getInstance(context))
-                        // Simulate completion after 3s
                         lastSyncTime = System.currentTimeMillis()
+                        viewModel.sync()
                     }
                 },
                 modifier = Modifier.fillMaxWidth().height(56.dp),
@@ -174,28 +175,35 @@ fun SyncDataScreen(
             HorizontalDivider()
             Text("Sync History", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
 
-            val history = listOf(
-                Triple("✓", "47 records uploaded", "2 hours ago"),
-                Triple("✓", "12 records uploaded", "Yesterday, 6:00 PM"),
-                Triple("✗", "Failed — no internet", "Yesterday, 2:30 PM"),
-                Triple("✓", "31 records uploaded", "2 days ago")
-            )
-            history.forEach { (status, label, time) ->
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
+            if (isSyncing) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Icon(Icons.Filled.Sync, null, modifier = Modifier.size(18.dp).rotate(rotation), tint = MaterialTheme.colorScheme.primary)
+                    Text("Syncing pending records…", style = MaterialTheme.typography.bodySmall)
+                }
+            } else if (uiState.lastSyncMessage != null) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text(
+                        if (uiState.lastSyncSucceeded) "✓" else "✗",
+                        color = if (uiState.lastSyncSucceeded) SwasthAIColors.RiskLow else SwasthAIColors.RiskHigh,
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                    Text("${uiState.lastSyncMessage} — ${SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(lastSyncTime))}", style = MaterialTheme.typography.bodySmall)
+                }
+            } else {
+                Surface(shape = RoundedCornerShape(12.dp), color = MaterialTheme.colorScheme.surfaceVariant) {
+                    Row(
+                        modifier = Modifier.padding(14.dp),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(Icons.Filled.Info, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
                         Text(
-                            status,
-                            color = if (status == "✓") SwasthAIColors.RiskLow else SwasthAIColors.RiskHigh,
-                            fontWeight = FontWeight.Bold,
-                            style = MaterialTheme.typography.bodyLarge
+                            "No sync activity yet. Tap 'Sync Now' to upload pending records.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                        Text(label, style = MaterialTheme.typography.bodySmall)
                     }
-                    Text(time, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.outline)
                 }
             }
 

@@ -93,23 +93,13 @@ fun ConnectProvidersScreen(
             ConnectOptionCard(
                 icon = Icons.Filled.RecordVoiceOver,
                 title = "Call Health Worker",
-                subtitle = "Talk to your assigned ASHA worker or CHW",
+                subtitle = "Free National Health Helpline (104)",
                 iconColor = SwasthAIColors.RiskLow,
                 containerColor = MaterialTheme.colorScheme.secondaryContainer,
                 onClick = {
-                    val intent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:+91-1234567890"))
+                    val intent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:104"))
                     context.startActivity(intent)
                 }
-            )
-
-            // Online Consultation
-            ConnectOptionCard(
-                icon = Icons.Filled.VideoCall,
-                title = "Online Consultation",
-                subtitle = "Connect with a doctor via telemedicine",
-                iconColor = MaterialTheme.colorScheme.tertiary,
-                containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                onClick = { /* TODO: launch teleconsultation */ }
             )
 
             // Government helplines

@@ -23,7 +23,9 @@ import java.util.UUID
  *
  * Nothing here is mock: the output follows from the data it was given.
  */
-class ClinicalReasoningEngine {
+class ClinicalReasoningEngine(
+    private val ragRetriever: LocalRagRetriever
+) {
 
     data class ReasoningOutput(
         val predictedDisease: String,
@@ -427,9 +429,25 @@ class ClinicalReasoningEngine {
                 category = "monitoring", priority = 1
             )
         )
+
+        // RAG: pull the most relevant knowledge-base entry for the reported
+        // symptoms so even unmatched input surfaces helpful, condition-aware
+        // guidance instead of a purely generic reply. On-device and offline.
+        val query = symptoms.joinToString(" ") { it.name }
+        val ragDoc = ragRetriever.retrieve(query, limit = 1).firstOrNull()
+        val ragAdvice = ragDoc?.let { doc ->
+            MedicalAdvice(
+                condition = doc.topic,
+                cause = "Based on the reported symptoms, the closest guidance in the local health library relates to ${doc.topic}.",
+                remedy = doc.content,
+                doctorToConsult = "General Physician",
+                urgencyHint = "Consult a doctor for a full evaluation."
+            )
+        }
+
         return ReasoningOutput(
             predictedDisease = "Undifferentiated Illness",
-            advice = DiseaseKnowledgeBase.adviceFor("undifferentiated illness"),
+            advice = ragAdvice ?: DiseaseKnowledgeBase.adviceFor("undifferentiated illness"),
             confidence = 0f,
             riskLevel = risk,
             differentialDiagnosis = emptyList(),

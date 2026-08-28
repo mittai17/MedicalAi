@@ -1,5 +1,7 @@
 package com.swasthai.app.feature.healthworker.dashboard
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.foundation.background
@@ -273,6 +275,7 @@ private fun HWQuickActionsSection(
     onSyncData: () -> Unit,
     onSettings: () -> Unit
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     Column(modifier = Modifier.padding(16.dp)) {
         Text("Quick Actions", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 12.dp))
         val rows = listOf(
@@ -284,7 +287,9 @@ private fun HWQuickActionsSection(
             listOf(
                 Triple(Icons.Filled.Sync, "Sync Data", onSyncData),
                 Triple(Icons.Filled.Settings, "Settings", onSettings),
-                Triple(Icons.Filled.Help, "Help", {})
+                Triple(Icons.Filled.Help, "Help", {
+                    context.startActivity(Intent(Intent.ACTION_DIAL, Uri.parse("tel:104")))
+                })
             )
         )
         rows.forEach { row ->

@@ -1,5 +1,7 @@
 package com.swasthai.app.feature.healthworker.screening
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -41,6 +43,7 @@ fun FollowUpDecisionScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val result = uiState.diagnosisResult
+    val context = androidx.compose.ui.platform.LocalContext.current
 
     Scaffold(
         topBar = {
@@ -76,7 +79,11 @@ fun FollowUpDecisionScreen(
                             }
                         }
                         result?.let { RiskBadge(riskLevel = it.riskLevel) }
-                            ?: RiskBadge(riskLevel = RiskLevel.MODERATE)
+                            ?: Text(
+                                "No result yet",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                     }
                 }
             }
@@ -97,7 +104,7 @@ fun FollowUpDecisionScreen(
                     subtitle = "Patient needs immediate emergency care",
                     color = SwasthAIColors.RiskHigh,
                     isUrgent = true,
-                    onClick = { /* dial 108 */ }
+                    onClick = { dialEmergency(context) }
                 )
             }
 
@@ -167,4 +174,10 @@ private fun DecisionOptionCard(
             Icon(Icons.Filled.ChevronRight, null, tint = MaterialTheme.colorScheme.outline)
         }
     }
+}
+
+private fun dialEmergency(context: android.content.Context) {
+    context.startActivity(
+        Intent(Intent.ACTION_DIAL, Uri.parse("tel:108")).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    )
 }

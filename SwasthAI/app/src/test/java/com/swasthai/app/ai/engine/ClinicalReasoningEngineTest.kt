@@ -10,7 +10,19 @@ import java.util.UUID
 
 class ClinicalReasoningEngineTest {
 
-    private val engine = ClinicalReasoningEngine()
+    private val engine = ClinicalReasoningEngine(clinicalRetriever())
+
+    private fun clinicalRetriever(): LocalRagRetriever {
+        val docs = DiseaseKnowledgeBase.allEntries().map { (key, advice) ->
+            RagDocument(
+                id = "kb_$key",
+                topic = advice.condition,
+                category = "clinical",
+                content = "Cause: ${advice.cause} Remedy: ${advice.remedy}"
+            )
+        }
+        return LocalRagRetriever(docs)
+    }
 
     private fun sym(name: String, duration: String? = null) =
         Symptom(id = UUID.randomUUID().toString(), screeningId = "s", name = name, duration = duration)

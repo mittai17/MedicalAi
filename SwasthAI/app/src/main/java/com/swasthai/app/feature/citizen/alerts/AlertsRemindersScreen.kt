@@ -28,6 +28,9 @@ fun AlertsRemindersScreen(
     onBack: () -> Unit
 ) {
     var selectedTab by remember { mutableIntStateOf(0) }
+    var alerts by remember { mutableStateOf(buildAlerts()) }
+    var showAddDialog by remember { mutableStateOf(false) }
+    var newTitle by remember { mutableStateOf("") }
 
     Scaffold(
         topBar = {
@@ -36,7 +39,7 @@ fun AlertsRemindersScreen(
                 showBackButton = true,
                 onBackClick = onBack,
                 actions = {
-                    IconButton(onClick = { /* TODO: Add reminder */ }) {
+                    IconButton(onClick = { showAddDialog = true }) {
                         Icon(Icons.Filled.Add, contentDescription = "Add Reminder")
                     }
                 }
@@ -61,14 +64,13 @@ fun AlertsRemindersScreen(
                 )
             }
 
-            val alerts = buildAlerts()
             val displayAlerts = if (selectedTab == 0) alerts else alerts.filter { it.isReminder }
 
             if (displayAlerts.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Icon(Icons.Filled.NotificationsOff, null, modifier = Modifier.size(56.dp), tint = MaterialTheme.colorScheme.outlineVariant)
-                        Text("No alerts", style = MaterialTheme.typography.titleMedium)
+                        Text(if (selectedTab == 0) "No alerts" else "No reminders", style = MaterialTheme.typography.titleMedium)
                     }
                 }
             } else {
@@ -77,9 +79,47 @@ fun AlertsRemindersScreen(
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     items(displayAlerts.size) { index ->
-                        AlertCard(alert = displayAlerts[index])
+                        AlertCard(alert = displayAlerts[index], onDismiss = { alerts = alerts.filter { it != displayAlerts[index] } })
                     }
                 }
+            }
+
+            val newAlertColor = MaterialTheme.colorScheme.primary
+
+            if (showAddDialog) {
+                AlertDialog(
+                    onDismissRequest = { showAddDialog = false },
+                    title = { Text("Add Reminder") },
+                    text = {
+                        OutlinedTextField(
+                            value = newTitle,
+                            onValueChange = { newTitle = it },
+                            placeholder = { Text("e.g. Take medicine at night") },
+                            singleLine = true
+                        )
+                    },
+                    confirmButton = {
+                        TextButton(onClick = {
+                            if (newTitle.isNotBlank()) {
+                                alerts = listOf(
+                                    AlertItem(
+                                        icon = Icons.Filled.Notifications,
+                                        iconColor = newAlertColor,
+                                        title = newTitle,
+                                        subtitle = "Reminder",
+                                        time = "Just now",
+                                        isReminder = true
+                                    )
+                                ) + alerts
+                                newTitle = ""
+                            }
+                            showAddDialog = false
+                        }) { Text("Add") }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showAddDialog = false }) { Text("Cancel") }
+                    }
+                )
             }
         }
     }
@@ -143,7 +183,7 @@ private fun buildAlerts() = listOf(
 )
 
 @Composable
-private fun AlertCard(alert: AlertItem) {
+private fun AlertCard(alert: AlertItem, onDismiss: () -> Unit) {
     ElevatedCard(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(14.dp)
@@ -204,10 +244,9 @@ private fun AlertCard(alert: AlertItem) {
 
             // Dismiss button
             IconButton(
-                onClick = { },
-                modifier = Modifier.size(32.dp)
+                onClick = onDismiss
             ) {
-                Icon(Icons.Filled.Close, null, tint = MaterialTheme.colorScheme.outline, modifier = Modifier.size(16.dp))
+                Icon(Icons.Filled.Close, contentDescription = "Dismiss", tint = MaterialTheme.colorScheme.outline, modifier = Modifier.size(16.dp))
             }
         }
     }

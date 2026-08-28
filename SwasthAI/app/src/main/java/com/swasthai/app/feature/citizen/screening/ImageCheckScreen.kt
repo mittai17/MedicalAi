@@ -62,10 +62,23 @@ fun ImageCheckScreen(
         }
     }
 
-    // Camera permission launcher
+    // Closure to actually fire the camera intent (set below so it can be
+    // re-invoked from the permission result without restarting the screen).
+    var launchCamera: () -> Unit = {}
+
+    // Camera permission launcher: once granted, relaunch the camera intent.
     val cameraPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
-    ) { _ -> /* Permission handled on button click */ }
+    ) { granted ->
+        if (granted) {
+            launchCamera()
+        } else {
+            viewModel.setScreeningMessage(
+                "Camera permission is required to take a photo. " +
+                    "You can still choose an image from the gallery."
+            )
+        }
+    }
 
     // Camera launcher
     val cameraLauncher = rememberLauncherForActivityResult(
@@ -87,7 +100,7 @@ fun ImageCheckScreen(
         }
     }
 
-    fun launchCamera() {
+    launchCamera = {
         val hasCameraPermission = ContextCompat.checkSelfPermission(
             context, Manifest.permission.CAMERA
         ) == PackageManager.PERMISSION_GRANTED
@@ -138,6 +151,38 @@ fun ImageCheckScreen(
             }
 
             Spacer(modifier = Modifier.height(24.dp))
+
+            // Non-fatal message (e.g. camera permission denied)
+            uiState.errorMessage?.let { message ->
+                ElevatedCard(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    colors = CardDefaults.elevatedCardColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer
+                    ),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(14.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        Icon(
+                            Icons.Filled.Info,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onErrorContainer
+                        )
+                        Text(
+                            text = message,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onErrorContainer,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+            }
 
             // Scan type selector
             ScanTypeSelector(
@@ -211,9 +256,10 @@ private fun ImagePlaceholder(
                 )
                 Text(
                     text = "Tap to Capture or Choose from Gallery",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
                     textAlign = TextAlign.Center,
+                    fontWeight = FontWeight.SemiBold,
                     modifier = Modifier.padding(horizontal = 24.dp)
                 )
             }
@@ -452,8 +498,9 @@ private fun ImageTipsCard() {
                     Text("•", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
                     Text(
                         text = tip,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        fontWeight = FontWeight.Medium
                     )
                 }
             }

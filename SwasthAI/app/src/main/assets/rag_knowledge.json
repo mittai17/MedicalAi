@@ -1,0 +1,29 @@
+{
+  "source": "SwasthAI curated general & health knowledge (bundled)",
+  "version": 1,
+  "documents": [
+    { "id": "gen_001", "category": "general", "topic": "Healthy Diet", "content": "Eat a balanced diet with plenty of vegetables, fruits, whole grains and protein. Limit salt, sugar and processed foods. Drink at least 8 glasses of clean water daily." },
+    { "id": "gen_002", "category": "general", "topic": "Physical Activity", "content": "Adults should get about 30 minutes of moderate activity most days, such as brisk walking, cycling or household work. Regular movement improves heart health and mood." },
+    { "id": "gen_003", "category": "mental", "topic": "Stress Management", "content": "Manage stress with deep breathing, regular sleep, talking to trusted people and taking short breaks. Persistent anxiety or sadness should be discussed with a counsellor." },
+    { "id": "gen_004", "category": "mental", "topic": "Sleep Hygiene", "content": "Aim for 7 to 9 hours of sleep. Keep a regular sleep schedule, avoid screens and caffeine before bed, and keep your bedroom dark and quiet." },
+    { "id": "gen_005", "category": "first_aid", "topic": "Cuts and Scrapes", "content": "Wash a minor cut with clean water, apply gentle pressure to stop bleeding, and cover with a clean bandage. Change the dressing daily and watch for redness or pus." },
+    { "id": "gen_006", "category": "first_aid", "topic": "Burns", "content": "Cool a minor burn under running water for at least 10 minutes. Do not apply ice, butter or toothpaste. Cover loosely with clean cloth and seek help for large or facial burns." },
+    { "id": "gen_007", "category": "first_aid", "topic": "Choking", "content": "If someone is choking and cannot breathe or speak, call for emergency help and perform back blows and abdominal thrusts (Heimlich manoeuvre) if trained." },
+    { "id": "gen_008", "category": "first_aid", "topic": "Fainting", "content": "If someone faints, lay them flat, raise their legs slightly, loosen tight clothing and ensure fresh air. If they do not wake quickly, seek urgent medical help." },
+    { "id": "gen_009", "category": "hygiene", "topic": "Handwashing", "content": "Wash hands with soap and water for at least 20 seconds, especially before eating, after using the toilet, and after coughing or sneezing." },
+    { "id": "gen_010", "category": "hygiene", "topic": "Oral Hygiene", "content": "Brush teeth twice a day with fluoride toothpaste and floss once daily. Visit a dentist for check-ups and limit sugary foods and drinks." },
+    { "id": "gen_011", "category": "nutrition", "topic": "Iron Deficiency", "content": "Iron-rich foods include leafy greens, legumes, red meat and fortified cereals. Pair them with vitamin C foods like citrus to improve absorption." },
+    { "id": "gen_012", "category": "nutrition", "topic": "Hydration", "content": "Water is essential for every body function. Urine that is pale straw-coloured usually means good hydration; dark urine suggests you need to drink more." },
+    { "id": "gen_013", "category": "maternal", "topic": "Pregnancy Nutrition", "content": "Pregnant women need extra iron, folic acid and protein. Eat iron-rich and fortified foods and attend regular antenatal check-ups." },
+    { "id": "gen_014", "category": "maternal", "topic": "Newborn Care", "content": "Breastfeed soon after birth and on demand. Keep the baby warm, sleep the baby on its back, and attend vaccination appointments." },
+    { "id": "gen_015", "category": "prevention", "topic": "Vaccination", "content": "Vaccines protect against serious diseases. Complete the recommended schedule for children and keep up to date with adult boosters as advised by health workers." },
+    { "id": "gen_016", "category": "prevention", "topic": "Mosquito Borne Disease", "content": "Prevent dengue and malaria by removing stagnant water, using bed nets and repellent, and wearing long sleeves, especially at dawn and dusk." },
+    { "id": "gen_017", "category": "general", "topic": "Handling Fever", "content": "For a fever, rest, drink plenty of fluids and use paracetamol as advised. Seek care if the fever is very high, lasts more than a few days, or comes with a stiff neck or rash." },
+    { "id": "gen_018", "category": "general", "topic": "Dehydration", "content": "Symptoms of dehydration include thirst, dark urine, dry mouth and fatigue. Take oral rehydration salts (ORS) and drink small sips of clean water frequently." },
+    { "id": "gen_019", "category": "chroni", "topic": "Blood Pressure", "content": "High blood pressure often has no symptoms. Follow a low-salt diet, stay active, avoid smoking and take prescribed medication exactly as directed." },
+    { "id": "gen_020", "category": "chroni", "topic": "Diabetes", "content": "Diabetes is managed with a balanced diet, regular activity, monitoring blood sugar and taking medication as prescribed. Attend regular check-ups." },
+    { "id": "gen_021", "category": "general", "topic": "When to See a Doctor", "content": "See a doctor for chest pain, difficulty breathing, severe bleeding, high fever, weakness on one side of the body, or symptoms that keep getting worse." },
+    { "id": "gen_022", "category": "first_aid", "topic": "Animal Bite", "content": "Wash a bite wound with soap and running water, apply antiseptic, and seek care promptly for rabies prevention if the animal's vaccination status is unknown." },
+    { "id": "gen_023", "category": "nutrition", "topic": "Child Nutrition", "content": "Young children need energy-dense foods frequently. Include grains, protein (eggs, pulses, milk), fruits and vegetables and continue breastfeeding for the first two years." }
+  ]
+}
