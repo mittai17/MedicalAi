@@ -53,6 +53,7 @@ fun User.toEntity(passwordHash: String? = null) = UserEntity(
 
 fun PatientEntity.toDomain() = Patient(
     id = id,
+    referenceId = referenceId.ifBlank { "REF-${Math.abs(id.hashCode() % 900000 + 100000)}" },
     registeredBy = registeredBy,
     name = name,
     age = age,
@@ -69,6 +70,7 @@ fun PatientEntity.toDomain() = Patient(
 
 fun Patient.toEntity() = PatientEntity(
     id = id,
+    referenceId = referenceId.ifBlank { "REF-${Math.abs(id.hashCode() % 900000 + 100000)}" },
     registeredBy = registeredBy,
     name = name,
     age = age,

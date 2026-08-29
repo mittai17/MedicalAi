@@ -83,6 +83,10 @@ fun PatientDetailScreen(
                         shape = RoundedCornerShape(16.dp)
                     ) {
                         Column(modifier = Modifier.padding(4.dp)) {
+                            if (patient.referenceId.isNotBlank()) {
+                                InfoRow(Icons.Filled.Badge, "Reference ID", patient.referenceId)
+                                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+                            }
                             InfoRow(Icons.Filled.Person, "Name", patient.name)
                             HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                             InfoRow(Icons.Filled.Cake, "Age", "${patient.age ?: "—"} years")

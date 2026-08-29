@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 2,
-    "identityHash": "d566ece757e582cfc6d368553dfaf195",
+    "identityHash": "821fc16b536173242ba1cb2b8502e138",
     "entities": [
       {
         "tableName": "users",
@@ -110,11 +110,17 @@
       },
       {
         "tableName": "patients",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `registered_by` TEXT NOT NULL, `name` TEXT NOT NULL, `age` INTEGER, `gender` TEXT, `phone` TEXT, `village` TEXT, `address` TEXT, `aadhar_number` TEXT, `medical_history` TEXT, `existing_diseases` TEXT, `created_at` INTEGER NOT NULL, `is_synced` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `reference_id` TEXT NOT NULL, `registered_by` TEXT NOT NULL, `name` TEXT NOT NULL, `age` INTEGER, `gender` TEXT, `phone` TEXT, `village` TEXT, `address` TEXT, `aadhar_number` TEXT, `medical_history` TEXT, `existing_diseases` TEXT, `created_at` INTEGER NOT NULL, `is_synced` INTEGER NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
             "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "referenceId",
+            "columnName": "reference_id",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -720,7 +726,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'd566ece757e582cfc6d368553dfaf195')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '821fc16b536173242ba1cb2b8502e138')"
     ]
   }
 }

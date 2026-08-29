@@ -64,7 +64,80 @@ class PatientViewModel @Inject constructor(
     private val _searchQuery = MutableStateFlow("")
 
     init {
+        seedInitialPatientsIfEmpty()
         loadPatients()
+    }
+
+    private fun seedInitialPatientsIfEmpty() {
+        viewModelScope.launch {
+            try {
+                val count = patientRepository.getPatientCount("")
+                if (count == 0) {
+                    val mockPatients = listOf(
+                        Patient(
+                            id = "p-seed-001",
+                            referenceId = "REF-482910",
+                            name = "Ramesh Patel",
+                            age = 52,
+                            gender = "Male",
+                            village = "Rampur",
+                            phone = "9876543210",
+                            medicalHistory = "Hypertension, periodic chest discomfort",
+                            existingDiseases = listOf("Hypertension")
+                        ),
+                        Patient(
+                            id = "p-seed-002",
+                            referenceId = "REF-739102",
+                            name = "Sunita Devi",
+                            age = 38,
+                            gender = "Female",
+                            village = "Kalyanpur",
+                            phone = "9823456789",
+                            medicalHistory = "Diabetes Type 2, regular HbA1c screening",
+                            existingDiseases = listOf("Diabetes")
+                        ),
+                        Patient(
+                            id = "p-seed-003",
+                            referenceId = "REF-109482",
+                            name = "Rajesh Sharma",
+                            age = 65,
+                            gender = "Male",
+                            village = "Shivnagar",
+                            phone = "9123456780",
+                            medicalHistory = "Chronic respiratory issues, seasonal cough",
+                            existingDiseases = listOf("COPD")
+                        ),
+                        Patient(
+                            id = "p-seed-004",
+                            referenceId = "REF-520194",
+                            name = "Anita Verma",
+                            age = 29,
+                            gender = "Female",
+                            village = "Anandpur",
+                            phone = "9456781234",
+                            medicalHistory = "Post-natal checkup, routine vitals",
+                            existingDiseases = emptyList()
+                        ),
+                        Patient(
+                            id = "p-seed-005",
+                            referenceId = "REF-831490",
+                            name = "Mohammad Arif",
+                            age = 44,
+                            gender = "Male",
+                            village = "Rampur",
+                            phone = "9988776655",
+                            medicalHistory = "General health checkup",
+                            existingDiseases = emptyList()
+                        )
+                    )
+                    for (p in mockPatients) {
+                        patientRepository.savePatient(p)
+                    }
+                }
+            } catch (_: Exception) {
+                // Ignore seed error
+            }
+        }
     }
 
     private fun loadPatients() {
@@ -119,8 +192,10 @@ class PatientViewModel @Inject constructor(
         }
         viewModelScope.launch {
             _addUiState.value = state.copy(isSaving = true, error = null)
+            val refId = "REF-${(100000..999999).random()}"
             val patient = Patient(
                 id = UUID.randomUUID().toString(),
+                referenceId = refId,
                 name = state.name.trim(),
                 age = state.age.toIntOrNull(),
                 gender = state.gender,

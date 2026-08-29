@@ -24,6 +24,7 @@ data class User(
  */
 data class Patient(
     val id: String,
+    val referenceId: String = "",
     val registeredBy: String = "",
     val name: String,
     val age: Int? = null,

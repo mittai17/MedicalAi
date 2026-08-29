@@ -1,6 +1,7 @@
 package com.swasthai.app.feature.citizen.screening
 
 import com.swasthai.app.ai.engine.AIEngineManager
+import com.swasthai.app.ai.engine.ScanType
 import com.swasthai.app.data.local.datastore.UserPreferences
 import com.swasthai.app.domain.model.*
 import com.swasthai.app.domain.repository.ScreeningRepository
@@ -31,6 +32,7 @@ class ScreeningViewModelTest {
         aiEngineManager = mockk(relaxed = true)
         userPreferences = mockk(relaxed = true)
 
+        every { userPreferences.userIdFlow } returns flowOf("test-user-123")
         every { userPreferences.userPhoneFlow } returns flowOf("1234567890")
         every { userPreferences.userNameFlow } returns flowOf("Test User")
 
@@ -71,5 +73,60 @@ class ScreeningViewModelTest {
 
         viewModel.goToPreviousStep()
         assertEquals(ScreeningStep.DURATION_SELECTION, viewModel.uiState.value.currentStep)
+    }
+
+    @Test
+    fun testCameraCaptureAndImageDiagnosisFlow() = runTest {
+        val mockPhotoUri = "content://com.swasthai.app.provider/camera_cache/test_capture.jpg"
+        viewModel.setScreeningType(ScreeningType.IMAGE_CHECK)
+        viewModel.setScanType(ScanType.PNEUMONIA)
+        viewModel.setCapturedImagePath(mockPhotoUri)
+
+        val expectedResult = DiagnosisResult(
+            id = "diag-001",
+            screeningId = viewModel.uiState.value.screeningId,
+            predictedDisease = "Pneumonia",
+            confidenceScore = 0.92f,
+            riskLevel = RiskLevel.HIGH,
+            medicalAdvice = MedicalAdvice(
+                condition = "Pneumonia",
+                cause = "Bacterial or viral lung infection",
+                remedy = "Consult a physician promptly for antibiotic/supportive therapy",
+                doctorToConsult = "Pulmonologist"
+            )
+        )
+
+        coEvery {
+            aiEngineManager.runDiagnosis(
+                symptoms = any(),
+                vitals = any(),
+                imagePath = any(),
+                voiceTranscript = any(),
+                screeningId = any(),
+                scanType = any()
+            )
+        } returns expectedResult
+
+        coEvery { screeningRepository.saveDiagnosisResult(any()) } returns Result.success(Unit)
+        coEvery { screeningRepository.updateScreening(any()) } returns Result.success(Unit)
+
+        viewModel.skipVitalsAndDiagnose()
+        testScheduler.advanceUntilIdle()
+
+        val finalState = viewModel.uiState.value
+        assertEquals(mockPhotoUri, finalState.capturedImagePath)
+        assertEquals(ScanType.PNEUMONIA, finalState.scanType)
+        assertEquals(ScreeningStep.RESULT, finalState.currentStep)
+        assertNotNull(finalState.diagnosisResult)
+        assertEquals("Pneumonia", finalState.diagnosisResult?.predictedDisease)
+        assertEquals(0.92f, finalState.diagnosisResult?.confidenceScore)
+    }
+
+    @Test
+    fun testErrorMessageHandling() {
+        viewModel.setScreeningMessage("Camera permission is required to take a photo.")
+        assertEquals("Camera permission is required to take a photo.", viewModel.uiState.value.errorMessage)
+        viewModel.clearError()
+        assertNull(viewModel.uiState.value.errorMessage)
     }
 }

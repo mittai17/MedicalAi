@@ -45,6 +45,8 @@ data class UserEntity(
 data class PatientEntity(
     @PrimaryKey
     val id: String,
+    @ColumnInfo(name = "reference_id")
+    val referenceId: String = "",
     @ColumnInfo(name = "registered_by")
     val registeredBy: String = "",
     val name: String,
