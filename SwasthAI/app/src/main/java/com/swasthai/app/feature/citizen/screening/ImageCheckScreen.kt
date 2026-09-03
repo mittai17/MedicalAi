@@ -17,6 +17,7 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -50,15 +51,54 @@ fun ImageCheckScreen(
     onNavigateToResult: () -> Unit,
     viewModel: ScreeningViewModel = hiltViewModel()
 ) {
+    Scaffold(
+        topBar = {
+            SwasthAITopBar(
+                title = "Image Check",
+                showBackButton = true,
+                onBackClick = onBack
+            )
+        }
+    ) { paddingValues ->
+        ImageCheckContent(
+            onNavigateToResult = onNavigateToResult,
+            viewModel = viewModel,
+            modifier = Modifier.padding(paddingValues)
+        )
+    }
+}
+
+/**
+ * Scaffold-less camera/gallery capture + scan-type + "Analyse Image" flow,
+ * shared by the full-screen [ImageCheckScreen] and the unified Health Check hub.
+ *
+ * Auto-navigates to the result screen when the shared [ScreeningViewModel]
+ * reaches [ScreeningStep.RESULT].
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ImageCheckContent(
+    onNavigateToResult: () -> Unit,
+    viewModel: ScreeningViewModel,
+    modifier: Modifier = Modifier
+) {
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
 
     // Photo file URI
     var photoUri by remember { mutableStateOf<Uri?>(null) }
 
+    var navigatedForStep by rememberSaveable { mutableStateOf<String?>(null) }
     LaunchedEffect(uiState.currentStep) {
-        if (uiState.currentStep == ScreeningStep.RESULT) {
-            onNavigateToResult()
+        val step = uiState.currentStep
+        if (step.name != navigatedForStep) {
+            when (step) {
+                ScreeningStep.RESULT -> {
+                    navigatedForStep = step.name
+                    onNavigateToResult()
+                }
+                else -> {}
+            }
         }
     }
 
@@ -119,104 +159,96 @@ fun ImageCheckScreen(
         }
     }
 
-    Scaffold(
-        topBar = {
-            SwasthAITopBar(
-                title = "Image Check",
-                showBackButton = true,
-                onBackClick = onBack
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Image preview / placeholder
+        if (uiState.capturedImagePath != null) {
+            CapturedImagePreview(
+                imagePath = uiState.capturedImagePath!!,
+                onRetake = {
+                    navigatedForStep = null
+                    viewModel.setCapturedImagePath(null)
+                }
+            )
+        } else {
+            ImagePlaceholder(
+                onCameraClick = { launchCamera() },
+                onGalleryClick = { galleryLauncher.launch("image/*") }
             )
         }
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Spacer(modifier = Modifier.height(24.dp))
 
-            // Image preview / placeholder
-            if (uiState.capturedImagePath != null) {
-                CapturedImagePreview(
-                    imagePath = uiState.capturedImagePath!!,
-                    onRetake = { viewModel.setCapturedImagePath(null) }
-                )
-            } else {
-                ImagePlaceholder(
-                    onCameraClick = { launchCamera() },
-                    onGalleryClick = { galleryLauncher.launch("image/*") }
-                )
-            }
+        Spacer(modifier = Modifier.height(24.dp))
 
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Non-fatal message (e.g. camera permission denied)
-            uiState.errorMessage?.let { message ->
-                ElevatedCard(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                    colors = CardDefaults.elevatedCardColors(
-                        containerColor = MaterialTheme.colorScheme.errorContainer
-                    ),
-                    shape = RoundedCornerShape(12.dp)
+        // Non-fatal message (e.g. camera permission denied)
+        uiState.errorMessage?.let { message ->
+            ElevatedCard(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                colors = CardDefaults.elevatedCardColors(
+                    containerColor = MaterialTheme.colorScheme.errorContainer
+                ),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Row(
+                    modifier = Modifier.padding(14.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    Row(
-                        modifier = Modifier.padding(14.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        Icon(
-                            Icons.Filled.Info,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onErrorContainer
-                        )
-                        Text(
-                            text = message,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onErrorContainer,
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
-                }
-                Spacer(modifier = Modifier.height(16.dp))
-            }
-
-            // Scan type selector
-            ScanTypeSelector(
-                selected = uiState.scanType,
-                onSelect = viewModel::setScanType
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Tips
-            ImageTipsCard()
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Analyse button
-            if (uiState.capturedImagePath != null) {
-                SwasthAIPrimaryButton(
-                    text = "Analyse Image",
-                    onClick = { viewModel.skipVitalsAndDiagnose() },
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                    leadingIcon = Icons.Filled.Psychology
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-                if (uiState.isLoading) {
-                    LinearProgressIndicator(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp)
+                    Icon(
+                        Icons.Filled.Info,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onErrorContainer
+                    )
+                    Text(
+                        text = message,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onErrorContainer,
+                        fontWeight = FontWeight.Medium
                     )
                 }
             }
-
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
         }
+
+        // Scan type selector
+        ScanTypeSelector(
+            selected = uiState.scanType,
+            onSelect = viewModel::setScanType
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Tips
+        ImageTipsCard()
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Analyse button
+        if (uiState.capturedImagePath != null) {
+            SwasthAIPrimaryButton(
+                text = "Analyse Image",
+                onClick = { viewModel.skipVitalsAndDiagnose() },
+                modifier = Modifier.padding(horizontal = 16.dp),
+                leadingIcon = Icons.Filled.Psychology
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            if (uiState.isLoading) {
+                LinearProgressIndicator(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
     }
 }
 

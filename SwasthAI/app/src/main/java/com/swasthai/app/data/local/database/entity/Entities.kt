@@ -242,3 +242,30 @@ data class SyncQueueEntity(
     @ColumnInfo(name = "last_attempted")
     val lastAttempted: Long? = null
 )
+
+/**
+ * Room entity for Online Consultation requests (tracker).
+ * Stored offline-first; queued for backend sync via the Sync Queue.
+ */
+@Entity(tableName = "consultation_requests")
+data class ConsultationRequestEntity(
+    @PrimaryKey
+    val id: String,
+    @ColumnInfo(name = "user_id")
+    val userId: String,
+    @ColumnInfo(name = "screening_id")
+    val screeningId: String? = null,
+    val reason: String,
+    val urgency: String = "NORMAL",
+    @ColumnInfo(name = "patient_name")
+    val patientName: String,
+    @ColumnInfo(name = "patient_age")
+    val patientAge: Int? = null,
+    @ColumnInfo(name = "patient_sex")
+    val patientSex: String? = null,
+    @ColumnInfo(name = "patient_conditions")
+    val patientConditions: String = "",
+    val status: String = "REQUESTED",
+    @ColumnInfo(name = "created_at")
+    val createdAt: Long = System.currentTimeMillis()
+)

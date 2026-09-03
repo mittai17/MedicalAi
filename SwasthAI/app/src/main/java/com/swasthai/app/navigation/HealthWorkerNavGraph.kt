@@ -184,7 +184,7 @@ fun NavGraphBuilder.healthWorkerNavGraph(
         HWProfileScreen(
             onBack = { navController.popBackStack() },
             onLogout = {
-                navController.navigate(Screen.Login.route) {
+                navController.navigate(Screen.RoleSelection.route) {
                     popUpTo(Screen.HWDashboard.route) { inclusive = true }
                 }
             },

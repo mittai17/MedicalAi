@@ -11,27 +11,32 @@ package com.swasthai.app.navigation
 sealed class Screen(val route: String) {
 
     // ═══════════════════════════════════════
-    // ONBOARDING & AUTH
+    // ONBOARDING
     // ═══════════════════════════════════════
 
     data object Splash : Screen("splash")
     data object Welcome : Screen("welcome")
     data object LanguageSelection : Screen("language_selection")
     data object RoleSelection : Screen("role_selection")
-    data object Login : Screen("login")
-    data object Register : Screen("register")
 
     // ═══════════════════════════════════════
     // CITIZEN ROUTES
     // ═══════════════════════════════════════
 
+    data object CitizenHome : Screen("citizen_home")
     data object CitizenDashboard : Screen("citizen_dashboard")
+    data object HealthCheck : Screen("health_check?mode={mode}") {
+        /** Defaults to the symptoms (typed) method when [mode] is omitted. */
+        fun createRoute(mode: String = "symptoms"): String =
+            if (mode == "symptoms") "health_check" else "health_check?mode=$mode"
+    }
     data object SymptomCheck : Screen("symptom_check")
-    data object VoiceAssistant : Screen("voice_assistant")
+    data object VoiceCommand : Screen("voice_command")
     data object ImageCheck : Screen("image_check")
     data object VitalsInput : Screen("vitals_input")
     data object ScreeningResult : Screen("screening_result")
     data object ConnectProviders : Screen("connect_providers")
+    data object OnlineConsultation : Screen("online_consultation")
     data object HealthRecords : Screen("health_records")
     data object RecordDetail : Screen("record_detail/{screeningId}") {
         fun createRoute(screeningId: String) = "record_detail/$screeningId"
@@ -42,6 +47,8 @@ sealed class Screen(val route: String) {
     data object AlertsReminders : Screen("alerts_reminders")
     data object HealthTips : Screen("health_tips")
     data object CitizenProfile : Screen("citizen_profile")
+    data object EditProfile : Screen("edit_profile")
+    data object AIChat : Screen("ai_chat")
 
     // ═══════════════════════════════════════
     // HEALTH WORKER ROUTES
@@ -70,13 +77,18 @@ sealed class Screen(val route: String) {
 
 /**
  * Bottom navigation destinations for Citizen.
+ *
+ * Home, Records, Health Check, Connect and AI are tabs. Health Check sits in
+ * the centre of the bar as the primary action. Alerts and Profile are surfaced
+ * from the dashboard top bar (bell + avatar) instead, so they are NOT
+ * bottom-nav destinations anymore.
  */
 enum class CitizenBottomNav(val route: String, val label: String, val icon: String) {
     HOME(Screen.CitizenDashboard.route, "Home", "home"),
     RECORDS(Screen.HealthRecords.route, "Records", "description"),
+    HEALTH(Screen.HealthCheck.route, "Health Check", "health_and_safety"),
     CONNECT(Screen.ConnectProviders.route, "Connect", "favorite"),
-    ALERTS(Screen.AlertsReminders.route, "Alerts", "notifications"),
-    PROFILE(Screen.CitizenProfile.route, "Profile", "person")
+    AI(Screen.AIChat.route, "AI", "auto_awesome")
 }
 
 /**

@@ -57,6 +57,17 @@ interface ScreeningDao {
     @Query("SELECT * FROM vitals WHERE screening_id = :screeningId")
     suspend fun getVitalsByScreening(screeningId: String): VitalsEntity?
 
+    @Query(
+        """
+        SELECT v.* FROM vitals v
+        INNER JOIN screenings s ON v.screening_id = s.id
+        WHERE s.user_id = :userId
+        ORDER BY v.recorded_at DESC, s.created_at DESC
+        LIMIT 1
+        """
+    )
+    fun getLatestVitalsByUser(userId: String): Flow<VitalsEntity?>
+
     // ── Symptoms ──
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

@@ -1,0 +1,38 @@
+{
+  "buildFiles": [
+    "/home/mittai/Documents/medi/MedicalAi/SwasthAI/app/src/main/cpp/CMakeLists.txt"
+  ],
+  "cleanCommandsComponents": [
+    [
+      "/home/mittai/Android/Sdk/cmake/3.22.1/bin/ninja",
+      "-C",
+      "/home/mittai/Documents/medi/MedicalAi/SwasthAI/app/.cxx/Debug/6fk2p6k1/x86_64",
+      "clean"
+    ]
+  ],
+  "buildTargetsCommandComponents": [
+    "/home/mittai/Android/Sdk/cmake/3.22.1/bin/ninja",
+    "-C",
+    "/home/mittai/Documents/medi/MedicalAi/SwasthAI/app/.cxx/Debug/6fk2p6k1/x86_64",
+    "{LIST_OF_TARGETS_TO_BUILD}"
+  ],
+  "libraries": {
+    "swasthai_ai::@6890427a1f51a3e7e1df": {
+      "toolchain": "toolchain",
+      "abi": "x86_64",
+      "artifactName": "swasthai_ai",
+      "output": "/home/mittai/Documents/medi/MedicalAi/SwasthAI/app/build/intermediates/cxx/Debug/6fk2p6k1/obj/x86_64/libswasthai_ai.so",
+      "runtimeFiles": []
+    }
+  },
+  "toolchains": {
+    "toolchain": {
+      "cCompilerExecutable": "/home/mittai/Android/Sdk/ndk/27.0.12077973/toolchains/llvm/prebuilt/linux-x86_64/bin/clang.lld",
+      "cppCompilerExecutable": "/home/mittai/Android/Sdk/ndk/27.0.12077973/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++.lld"
+    }
+  },
+  "cFileExtensions": [],
+  "cppFileExtensions": [
+    "cpp"
+  ]
+}

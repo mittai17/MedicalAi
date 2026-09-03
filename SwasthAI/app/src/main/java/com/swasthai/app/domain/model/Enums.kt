@@ -45,6 +45,7 @@ enum class ScreeningType {
 enum class SymptomSource {
     MANUAL,
     VOICE,
+    TEXT,
     AI_EXTRACTED
 }
 
@@ -64,6 +65,16 @@ enum class SyncStatus {
 enum class ReferralStatus {
     PENDING,
     ACCEPTED,
+    COMPLETED,
+    CANCELLED
+}
+
+/**
+ * Status of an online consultation request (tracker).
+ */
+enum class ConsultationRequestStatus {
+    REQUESTED,
+    CONFIRMED,
     COMPLETED,
     CANCELLED
 }

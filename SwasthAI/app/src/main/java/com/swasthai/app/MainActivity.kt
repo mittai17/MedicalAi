@@ -1,9 +1,11 @@
 package com.swasthai.app
 
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.collectAsState
@@ -21,7 +23,8 @@ import javax.inject.Inject
 /**
  * Main entry Activity for SwasthAI.
  *
- * Uses edge-to-edge rendering with the splash screen API.
+ * Uses edge-to-edge rendering with the splash screen API and unlocks
+ * maximum display refresh rate (90Hz / 120Hz / 240Hz) for ultra-smooth UI.
  * The theme dynamically switches between Citizen (blue) and
  * Health Worker (green) based on the logged-in user's role.
  */
@@ -39,18 +42,42 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         enableEdgeToEdge()
+        enableHighRefreshRate()
 
         setContent {
             val userRole by userPreferences.userRoleFlow.collectAsState(initial = null)
+            val darkMode by userPreferences.darkModeFlow.collectAsState(
+                initial = isSystemInDarkTheme()
+            )
 
             SwasthAITheme(
-                userRole = userRole ?: UserRole.CITIZEN
+                userRole = userRole ?: UserRole.CITIZEN,
+                darkTheme = darkMode
             ) {
                 Surface(
                     modifier = Modifier.fillMaxSize()
                 ) {
                     SwasthAINavHost(networkMonitor = networkMonitor)
                 }
+            }
+        }
+    }
+
+    private fun enableHighRefreshRate() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            val maxMode = display?.supportedModes?.maxByOrNull { it.refreshRate }
+            if (maxMode != null) {
+                val params = window.attributes
+                params.preferredDisplayModeId = maxMode.modeId
+                window.attributes = params
+            }
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            @Suppress("DEPRECATION")
+            val maxMode = window.windowManager.defaultDisplay?.supportedModes?.maxByOrNull { it.refreshRate }
+            if (maxMode != null) {
+                val params = window.attributes
+                params.preferredDisplayModeId = maxMode.modeId
+                window.attributes = params
             }
         }
     }

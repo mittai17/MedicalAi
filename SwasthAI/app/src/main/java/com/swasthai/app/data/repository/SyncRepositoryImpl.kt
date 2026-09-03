@@ -7,10 +7,14 @@ import javax.inject.Inject
 
 /**
  * Implementation of SyncRepository.
- * Manages the offline sync queue and synchronization with the backend.
+ *
+ * syncPendingData asks [SyncUploader] to push each queued item to the real
+ * backend. Uploaded items are marked complete (and later purged); failures
+ * stay in the queue for the next retry.
  */
 class SyncRepositoryImpl @Inject constructor(
-    private val syncQueueDao: SyncQueueDao
+    private val syncQueueDao: SyncQueueDao,
+    private val syncUploader: SyncUploader
 ) : SyncRepository {
 
     override fun getPendingSyncCount(): Flow<Int> {
@@ -26,15 +30,15 @@ class SyncRepositoryImpl @Inject constructor(
             var syncedCount = 0
 
             for (item in allItems) {
-                try {
-                    // TODO: Send to FastAPI backend when available
-                    // For now, mark as completed (simulating successful sync)
+                if (syncUploader.upload(item).isSuccess) {
                     syncQueueDao.markAsCompleted(item.id)
                     syncedCount++
-                } catch (e: Exception) {
+                } else {
                     syncQueueDao.markAsFailed(item.id)
                 }
             }
+
+            syncQueueDao.clearCompletedItems()
 
             Result.success(syncedCount)
         } catch (e: Exception) {

@@ -123,7 +123,7 @@ fun LanguageSelectionScreen(
  */
 @Composable
 fun RoleSelectionScreen(
-    onContinue: () -> Unit,
+    onContinue: (com.swasthai.app.domain.model.UserRole) -> Unit,
     viewModel: OnboardingViewModel = hiltViewModel()
 ) {
     var selectedRole by remember { mutableStateOf<com.swasthai.app.domain.model.UserRole?>(null) }
@@ -170,8 +170,8 @@ fun RoleSelectionScreen(
             text = "Continue",
             onClick = {
                 selectedRole?.let { role ->
-                    viewModel.saveRole(role)
-                    onContinue()
+                    viewModel.completeAsRole(role)
+                    onContinue(role)
                 }
             },
             enabled = selectedRole != null

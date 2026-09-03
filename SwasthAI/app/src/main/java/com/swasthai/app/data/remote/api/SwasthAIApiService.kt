@@ -1,73 +1,148 @@
 package com.swasthai.app.data.remote.api
 
-import retrofit2.http.*
+import com.swasthai.app.BuildConfig
+import com.swasthai.app.data.remote.SessionTokenProvider
+import io.ktor.client.HttpClient
+import io.ktor.client.request.get
+import io.ktor.client.request.post
+import io.ktor.client.request.put
+import io.ktor.client.request.setBody
+import io.ktor.client.statement.HttpResponse
+import io.ktor.client.statement.bodyAsText
+import io.ktor.http.ContentType
+import io.ktor.http.HttpMethod
+import io.ktor.http.content.TextContent
+import io.ktor.http.isSuccess
+import kotlinx.coroutines.CancellationException
+import org.json.JSONArray
+import org.json.JSONObject
+import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
- * SwasthAI Retrofit API Service.
+ * SwasthAI Ktor API service.
  *
- * Defines all HTTP endpoints for the FastAPI backend.
- * In offline/stub mode all calls will fail gracefully and
- * the SyncWorker will retry when connectivity is restored.
+ * Defines all HTTP endpoints for the FastAPI backend. SwasthAI has no
+ * login/account: requests carry the anonymous device id header (see
+ * [SessionTokenProvider]) and bodies are built with org.json, so the service
+ * stays fully offline-capable — every call fails gracefully (returns null /
+ * false) and sync simply retries when connectivity returns.
  */
-interface SwasthAIApiService {
+@Singleton
+class SwasthAIApiService @Inject constructor(
+    private val httpClient: HttpClient,
+    private val sessionTokenProvider: SessionTokenProvider
+) {
 
-    // ── Auth ──
-    @POST("auth/login")
-    suspend fun login(@Body body: Map<String, String>): retrofit2.Response<Map<String, Any>>
+    // ── Auth (legacy; SwasthAI is login-free but the endpoints stay wired) ──
+    suspend fun login(body: Map<String, String>): JSONObject? =
+        postObject("auth/login", toJsonObject(body).toString())
 
-    @POST("auth/register")
-    suspend fun register(@Body body: Map<String, Any>): retrofit2.Response<Map<String, Any>>
+    suspend fun register(body: Map<String, Any>): JSONObject? =
+        postObject("auth/register", toJsonObject(body).toString())
 
     // ── Patients ──
-    @POST("patients")
-    suspend fun uploadPatient(@Body body: Map<String, Any?>): retrofit2.Response<Unit>
-
-    @PUT("patients/{id}")
-    suspend fun updatePatient(@Path("id") id: String, @Body body: Map<String, Any?>): retrofit2.Response<Unit>
-
-    @GET("patients")
-    suspend fun getPatients(): retrofit2.Response<List<Map<String, Any?>>>
+    suspend fun uploadPatient(body: Map<String, Any?>): Boolean = postOk("patients", body)
+    suspend fun updatePatient(id: String, body: Map<String, Any?>): Boolean = putOk("patients/$id", body)
+    suspend fun getPatients(): JSONArray? = getArray("patients")
 
     // ── Screenings ──
-    @POST("screenings")
-    suspend fun uploadScreening(@Body body: Map<String, Any?>): retrofit2.Response<Unit>
+    suspend fun uploadScreening(body: Map<String, Any?>): Boolean = postOk("screenings", body)
+    suspend fun updateScreening(id: String, body: Map<String, Any?>): Boolean = putOk("screenings/$id", body)
 
-    @PUT("screenings/{id}")
-    suspend fun updateScreening(@Path("id") id: String, @Body body: Map<String, Any?>): retrofit2.Response<Unit>
-
-    // ── Vitals ──
-    @POST("vitals")
-    suspend fun uploadVitals(@Body body: Map<String, Any?>): retrofit2.Response<Unit>
-
-    // ── Symptoms ──
-    @POST("symptoms")
-    suspend fun uploadSymptom(@Body body: Map<String, Any?>): retrofit2.Response<Unit>
-
-    // ── Reports ──
-    @POST("reports")
-    suspend fun uploadReport(@Body body: Map<String, Any?>): retrofit2.Response<Unit>
-
-    @GET("reports")
-    suspend fun getReports(): retrofit2.Response<List<Map<String, Any?>>>
+    // ── Vitals / Symptoms / Reports ──
+    suspend fun uploadVitals(body: Map<String, Any?>): Boolean = postOk("vitals", body)
+    suspend fun uploadSymptom(body: Map<String, Any?>): Boolean = postOk("symptoms", body)
+    suspend fun uploadReport(body: Map<String, Any?>): Boolean = postOk("reports", body)
+    suspend fun getReports(): JSONArray? = getArray("reports")
 
     // ── Referrals ──
-    @POST("referrals")
-    suspend fun uploadReferral(@Body body: Map<String, Any?>): retrofit2.Response<Unit>
-
-    @GET("referrals/pending")
-    suspend fun getPendingReferrals(): retrofit2.Response<List<Map<String, Any?>>>
+    suspend fun uploadReferral(body: Map<String, Any?>): Boolean = postOk("referrals", body)
+    suspend fun getPendingReferrals(): JSONArray? = getArray("referrals/pending")
 
     // ── Health Tips ──
-    @GET("health-tips")
-    suspend fun getHealthTips(): retrofit2.Response<List<Map<String, Any?>>>
+    suspend fun getHealthTips(): JSONArray? = getArray("health-tips")
 
     // ── Sync ──
-    @POST("sync/batch")
-    suspend fun syncBatch(@Body body: List<Map<String, Any?>>): retrofit2.Response<Map<String, Any>>
+    suspend fun syncBatch(body: List<Map<String, Any?>>): JSONObject? =
+        postObject("sync/batch", JSONArray(body.map { toJsonObject(it) }).toString())
+
+    // ── Consultation requests (telemedicine tracker) ──
+    suspend fun uploadConsultation(body: Map<String, Any?>): Boolean = postOk("consultations", body)
 
     // ── AI Fallback (remote Gemma second opinion) ──
-    @POST("ai/fallback")
-    suspend fun getAiFallback(
-        @Body body: Map<String, Any?>
-    ): retrofit2.Response<Map<String, Any>>
+    suspend fun getAiFallback(body: Map<String, Any?>): JSONObject? =
+        postObject("ai/fallback", toJsonObject(body).toString())
+
+    // ── Core helpers ──
+
+    private fun url(path: String): String = BuildConfig.API_BASE_URL + path
+
+    private suspend fun send(method: HttpMethod, path: String, body: String?): HttpResponse {
+        sessionTokenProvider.ensureDeviceId()
+        val content = body?.let { TextContent(it, ContentType.Application.Json) }
+        return when (method) {
+            HttpMethod.Post -> httpClient.post(url(path)) { content?.let { setBody(it) } }
+            HttpMethod.Put -> httpClient.put(url(path)) { content?.let { setBody(it) } }
+            else -> httpClient.get(url(path))
+        }
+    }
+
+    private suspend fun postOk(path: String, body: Map<String, Any?>): Boolean =
+        try {
+            send(HttpMethod.Post, path, toJsonObject(body).toString()).status.isSuccess()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (_: Exception) {
+            false
+        }
+
+    private suspend fun putOk(path: String, body: Map<String, Any?>): Boolean =
+        try {
+            send(HttpMethod.Put, path, toJsonObject(body).toString()).status.isSuccess()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (_: Exception) {
+            false
+        }
+
+    private suspend fun postObject(path: String, json: String): JSONObject? =
+        try {
+            val text = send(HttpMethod.Post, path, json).bodyAsText()
+            if (text.isBlank()) null else runCatching { JSONObject(text) }.getOrNull()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (_: Exception) {
+            null
+        }
+
+    private suspend fun getArray(path: String): JSONArray? =
+        try {
+            val text = send(HttpMethod.Get, path, null).bodyAsText()
+            if (text.isBlank()) null else runCatching { JSONArray(text) }.getOrNull()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (_: Exception) {
+            null
+        }
+
+    private fun toJsonObject(body: Map<String, Any?>): JSONObject {
+        val obj = JSONObject()
+        body.forEach { (key, value) -> obj.put(key, wrap(value)) }
+        return obj
+    }
+
+    private fun wrap(value: Any?): Any? = when (value) {
+        null -> JSONObject.NULL
+        is JSONObject, is JSONArray, is String, is Boolean -> value
+        is Number -> value
+        is Map<*, *> -> {
+            val nested = JSONObject()
+            value.forEach { (key, child) -> nested.put(key.toString(), wrap(child)) }
+            nested
+        }
+        is List<*> -> JSONArray(value.map { wrap(it) })
+        is Array<*> -> JSONArray(value.map { wrap(it) })
+        else -> value.toString()
+    }
 }

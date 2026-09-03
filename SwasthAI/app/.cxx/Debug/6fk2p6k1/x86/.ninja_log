@@ -1,0 +1,5 @@
+# ninja log v5
+0	3137	1788058689741891019	CMakeFiles/swasthai_ai.dir/ai_native.cpp.o	683f22cc196aac5c
+3141	3231	1788058689845891000	/home/mittai/Documents/medi/MedicalAi/SwasthAI/app/build/intermediates/cxx/Debug/6fk2p6k1/obj/x86/libswasthai_ai.so	e8fcc8ac63511dc8
+23	1662	1788059143666807277	CMakeFiles/swasthai_ai.dir/ai_native.cpp.o	683f22cc196aac5c
+1663	1773	1788059143806807252	/home/mittai/Documents/medi/MedicalAi/SwasthAI/app/build/intermediates/cxx/Debug/6fk2p6k1/obj/x86/libswasthai_ai.so	e8fcc8ac63511dc8

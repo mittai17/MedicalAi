@@ -2,10 +2,13 @@ package com.swasthai.app.ai.engine
 
 import com.swasthai.app.domain.model.DiagnosisResult
 import com.swasthai.app.domain.model.MedicalAdvice
+import com.swasthai.app.domain.model.PatientContext
 import com.swasthai.app.domain.model.Recommendation
 import com.swasthai.app.domain.model.RiskLevel
 import com.swasthai.app.domain.model.Symptom
 import com.swasthai.app.domain.model.Vitals
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -47,6 +50,9 @@ class AIEngineManager @Inject constructor(
      * @param screeningId The screening session ID
      * @param scanType Selected scan type
      * @return DiagnosisResult with predictions, risk level, and recommendations
+     *
+     * The whole pipeline (TFLite inference, bitmap decode, reasoning) runs on
+     * [Dispatchers.Default] so the UI thread is never blocked.
      */
     suspend fun runDiagnosis(
         symptoms: List<Symptom>,
@@ -54,8 +60,9 @@ class AIEngineManager @Inject constructor(
         imagePath: String? = null,
         voiceTranscript: String? = null,
         screeningId: String,
-        scanType: ScanType = ScanType.PNEUMONIA
-    ): DiagnosisResult {
+        scanType: ScanType = ScanType.PNEUMONIA,
+        patientContext: PatientContext? = null
+    ): DiagnosisResult = withContext(Dispatchers.Default) {
         val diagnosisId = UUID.randomUUID().toString()
 
         // When an image is provided, the on-device vision model is the
@@ -65,7 +72,7 @@ class AIEngineManager @Inject constructor(
         } else null
 
         // Always run the clinical reasoning over symptoms + vitals.
-        val reasoning = reasoningEngine.reason(symptoms, vitals, diagnosisId)
+        val reasoning = reasoningEngine.reason(symptoms, vitals, diagnosisId, patientContext)
 
         val predictedDisease: String
         val riskLevel: RiskLevel
@@ -128,7 +135,7 @@ class AIEngineManager @Inject constructor(
             reasoning.recommendations
         }
 
-        return DiagnosisResult(
+        DiagnosisResult(
             id = diagnosisId,
             screeningId = screeningId,
             predictedDisease = predictedDisease,

@@ -35,6 +35,9 @@ class ScreeningViewModelTest {
         every { userPreferences.userIdFlow } returns flowOf("test-user-123")
         every { userPreferences.userPhoneFlow } returns flowOf("1234567890")
         every { userPreferences.userNameFlow } returns flowOf("Test User")
+        every { userPreferences.userAgeFlow } returns flowOf(null)
+        every { userPreferences.userSexFlow } returns flowOf(null)
+        every { userPreferences.userConditionsFlow } returns flowOf(emptyList())
 
         viewModel = ScreeningViewModel(screeningRepository, aiEngineManager, userPreferences)
     }
@@ -103,7 +106,8 @@ class ScreeningViewModelTest {
                 imagePath = any(),
                 voiceTranscript = any(),
                 screeningId = any(),
-                scanType = any()
+                scanType = any(),
+                patientContext = any()
             )
         } returns expectedResult
 

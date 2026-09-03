@@ -22,7 +22,9 @@ class LocalRagRetriever @Inject constructor(
     private data class Indexed(
         val document: RagDocument,
         val terms: Map<String, Int>,
-        val totalTerms: Int
+        val totalTerms: Int,
+        /** Per-term tokens expanded by frequency — the [AiNative] input. */
+        val docTokens: Array<String>
     )
 
     private val index: List<Indexed> = documents.map { doc ->
@@ -30,7 +32,10 @@ class LocalRagRetriever @Inject constructor(
         Indexed(
             document = doc,
             terms = terms,
-            totalTerms = terms.values.sum()
+            totalTerms = terms.values.sum(),
+            docTokens = terms.entries
+                .flatMap { (term, count) -> List(count) { term } }
+                .toTypedArray()
         )
     }
 
@@ -42,26 +47,42 @@ class LocalRagRetriever @Inject constructor(
     fun retrieve(query: String, limit: Int = 3, category: String? = null): List<RagDocument> {
         val qTerms = normalizeTerms(query)
         if (qTerms.isEmpty()) return emptyList()
+        val qTokenArray = qTerms.keys.toTypedArray()
 
         return index
             .asSequence()
             .filter { category == null || it.document.category == category }
             .map { entry ->
-                val overlap = qTerms.keys.sumOf { term ->
-                    val e = entry.terms[term] ?: 0
-                    // Frequency-weighted overlap (BM25-like). Query terms that
-                    // appear get weight; document term frequency is capped.
-                    if (e > 0) minOf(qTerms[term] ?: 1, 1) * (1 + minOf(e, 3)) else 0
-                }
-                // Normalize by query size + slight length penalty for long docs.
-                val score = overlap.toDouble() / (qTerms.size + 0.1 * entry.totalTerms)
+                // Native score with a pure-Kotlin fallback; both compute the
+                // same formula so results never drift between the paths.
+                val score = AiNative.docScoreOrNull(qTokenArray, entry.docTokens)?.toDouble()
+                    ?: kotlinScore(entry, qTerms, qTerms.size)
                 entry.document to score
             }
-            .filter { it.second > 0f }
+            .filter { it.second > 0.0 }
             .sortedByDescending { it.second }
             .take(limit)
             .map { it.first }
             .toList()
+    }
+
+    /** Kotlin twin of the native kernel — same formula, used as the fallback. */
+    private fun kotlinScore(
+        entry: Indexed,
+        qTerms: Map<String, Int>,
+        querySize: Int
+    ): Double {
+        var overlap = 0.0
+        for ((term, queryFreq) in qTerms) {
+            val docFreq = entry.terms[term] ?: 0
+            if (docFreq > 0) {
+                // Frequency-weighted overlap (BM25-like). Query terms that
+                // appear get weight; document term frequency is capped.
+                overlap += minOf(queryFreq, 1) * (1 + minOf(docFreq, 3))
+            }
+        }
+        // Normalize by query size + slight length penalty for long docs.
+        return overlap / (querySize + 0.1 * entry.totalTerms)
     }
 
     private fun normalizeTerms(text: String): Map<String, Int> {

@@ -3,6 +3,7 @@ package com.swasthai.app
 import android.app.Application
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
+import com.swasthai.app.core.ai.StartupWarmup
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 
@@ -20,6 +21,9 @@ class SwasthAIApplication : Application(), Configuration.Provider {
     @Inject
     lateinit var workerFactory: HiltWorkerFactory
 
+    @Inject
+    lateinit var startupWarmup: StartupWarmup
+
     override val workManagerConfiguration: Configuration
         get() = Configuration.Builder()
             .setWorkerFactory(workerFactory)
@@ -33,5 +37,7 @@ class SwasthAIApplication : Application(), Configuration.Provider {
         super.onCreate()
         // Initialize SQLCipher native library
         System.loadLibrary("sqlcipher")
+        // Warm the on-device AI index off the main thread.
+        startupWarmup.warm()
     }
 }

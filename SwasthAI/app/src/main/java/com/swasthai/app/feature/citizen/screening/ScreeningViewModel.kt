@@ -6,6 +6,7 @@ import com.swasthai.app.ai.engine.AIEngineManager
 import com.swasthai.app.ai.engine.ScanType
 import com.swasthai.app.data.local.datastore.UserPreferences
 import com.swasthai.app.domain.model.DiagnosisResult
+import com.swasthai.app.domain.model.PatientContext
 import com.swasthai.app.domain.model.RiskLevel
 import com.swasthai.app.domain.model.Screening
 import com.swasthai.app.domain.model.ScreeningStatus
@@ -66,9 +67,10 @@ data class ScreeningUiState(
     val weight: String = "",
     val height: String = "",
 
-    // Voice assistant
+    // Voice & keyboard assistant
     val isRecording: Boolean = false,
     val voiceTranscript: String = "",
+    val textTranscript: String = "",
 
     // Image check
     val capturedImagePath: String? = null,
@@ -188,6 +190,11 @@ class ScreeningViewModel @Inject constructor(
         _uiState.update { it.copy(voiceTranscript = text) }
     }
 
+    /** Free-text symptoms typed instead of spoken. */
+    fun updateTextTranscript(text: String) {
+        _uiState.update { it.copy(textTranscript = text) }
+    }
+
     fun setRecording(recording: Boolean) {
         _uiState.update { it.copy(isRecording = recording) }
     }
@@ -287,14 +294,23 @@ class ScreeningViewModel @Inject constructor(
                     screeningRepository.saveVitals(vitals)
                 }
 
-                // Run AI diagnosis
+                // Run AI diagnosis, personalised by the patient profile.
+                val patientContext = PatientContext(
+                    age = userPreferences.userAgeFlow.first(),
+                    sex = userPreferences.userSexFlow.first(),
+                    chronicConditions = userPreferences.userConditionsFlow.first()
+                )
                 val result = aiEngineManager.runDiagnosis(
                     symptoms = symptoms,
                     vitals = vitals,
                     imagePath = state.capturedImagePath,
-                    voiceTranscript = state.voiceTranscript.ifBlank { null },
+                    voiceTranscript = listOf(state.voiceTranscript, state.textTranscript)
+                        .filter { it.isNotBlank() }
+                        .joinToString(" ")
+                        .ifBlank { null },
                     screeningId = state.screeningId,
-                    scanType = state.scanType
+                    scanType = state.scanType,
+                    patientContext = patientContext
                 )
 
                 // Save diagnosis result
@@ -375,6 +391,19 @@ class ScreeningViewModel @Inject constructor(
                     name = state.voiceTranscript.trim(),
                     duration = state.selectedDuration,
                     source = SymptomSource.VOICE
+                )
+            )
+        }
+
+        // From typed free text (keyboard input)
+        if (state.textTranscript.isNotBlank()) {
+            symptoms.add(
+                Symptom(
+                    id = UUID.randomUUID().toString(),
+                    screeningId = state.screeningId,
+                    name = state.textTranscript.trim(),
+                    duration = state.selectedDuration,
+                    source = SymptomSource.TEXT
                 )
             )
         }

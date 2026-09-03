@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.hilt.work.HiltWorker
 import androidx.work.*
 import com.swasthai.app.data.local.database.dao.SyncQueueDao
-import com.swasthai.app.data.remote.api.SwasthAIApiService
+import com.swasthai.app.data.repository.SyncUploader
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import java.util.concurrent.TimeUnit
@@ -12,10 +12,9 @@ import java.util.concurrent.TimeUnit
 /**
  * Background SyncWorker — runs when network is available.
  *
- * Processes the SyncQueue: uploads pending screenings, vitals,
- * symptoms, and reports to the FastAPI backend.
- *
- * Uses exponential back-off on failure.
+ * Processes the SyncQueue: each pending item is turned into a real backend
+ * upload by [SyncUploader]. Successful items are marked complete; failures
+ * are recorded and retried (exponential back-off).
  * Tagged as "swasthai_sync" so it can be cancelled/checked by name.
  */
 @HiltWorker
@@ -23,7 +22,7 @@ class SyncWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted workerParams: WorkerParameters,
     private val syncQueueDao: SyncQueueDao,
-    private val apiService: SwasthAIApiService
+    private val syncUploader: SyncUploader
 ) : CoroutineWorker(context, workerParams) {
 
     companion object {
@@ -89,18 +88,9 @@ class SyncWorker @AssistedInject constructor(
 
             var allSuccess = true
             for (item in pendingItems) {
-                try {
-                    // Dispatch based on entity type
-                    when (item.entityType) {
-                        "SCREENING" -> syncScreening(item.entityId)
-                        "VITALS"    -> syncVitals(item.entityId)
-                        "SYMPTOM"   -> syncSymptom(item.entityId)
-                        "REPORT"    -> syncReport(item.entityId)
-                        "PATIENT"   -> syncPatient(item.entityId)
-                        else        -> { /* Unknown — mark as completed to avoid retries */ }
-                    }
+                if (syncUploader.upload(item).isSuccess) {
                     syncQueueDao.markAsCompleted(item.id)
-                } catch (e: Exception) {
+                } else {
                     syncQueueDao.markAsFailed(item.id)
                     allSuccess = false
                 }
@@ -113,25 +103,5 @@ class SyncWorker @AssistedInject constructor(
         } catch (e: Exception) {
             if (runAttemptCount < 3) Result.retry() else Result.failure()
         }
-    }
-
-    private suspend fun syncScreening(id: String) {
-        // TODO: apiService.uploadScreening(id)
-    }
-
-    private suspend fun syncVitals(id: String) {
-        // TODO: apiService.uploadVitals(id)
-    }
-
-    private suspend fun syncSymptom(id: String) {
-        // TODO: apiService.uploadSymptom(id)
-    }
-
-    private suspend fun syncReport(id: String) {
-        // TODO: apiService.uploadReport(id)
-    }
-
-    private suspend fun syncPatient(id: String) {
-        // TODO: apiService.uploadPatient(id)
     }
 }

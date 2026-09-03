@@ -139,6 +139,56 @@ data class Report(
 )
 
 /**
+ * Patient context fed into the reasoning engine to personalise screening.
+ * All fields are optional — the engine only escalates on known facts.
+ */
+data class PatientContext(
+    val age: Int? = null,
+    val sex: String? = null,
+    val chronicConditions: List<String> = emptyList()
+)
+
+/**
+ * Domain model for a stored image screening record.
+ */
+data class ImageRecord(
+    val id: String,
+    val screeningId: String,
+    val imagePath: String,
+    val imageType: String? = null,
+    val analysisResult: String? = null,
+    val confidence: Float? = null
+)
+
+/**
+ * A fully-assembled screening: the session plus its symptoms, vitals,
+ * diagnosis (with recommendations and advice) and any images.
+ */
+data class ScreeningDetail(
+    val screening: Screening,
+    val symptoms: List<Symptom> = emptyList(),
+    val vitals: Vitals? = null,
+    val diagnosis: DiagnosisResult? = null,
+    val images: List<ImageRecord> = emptyList()
+)
+
+/**
+ * A persisted medication / health reminder.
+ *
+ * [repeatIntervalMillis] makes the reminder recurring: when non-zero the
+ * alarm re-arms itself that many millis after each fire (e.g. daily
+ * medicine = 24h). Zero means a one-time reminder.
+ */
+data class Reminder(
+    val id: String,
+    val title: String,
+    val note: String = "",
+    val timeInMillis: Long = System.currentTimeMillis(),
+    val repeatIntervalMillis: Long = 0L,
+    val createdAt: Long = System.currentTimeMillis()
+)
+
+/**
  * Domain model for a patient referral to a PHC/Hospital.
  */
 data class Referral(
@@ -153,4 +203,23 @@ data class Referral(
     val notes: String? = null,
     val status: ReferralStatus = ReferralStatus.PENDING,
     val scheduledDate: Long? = null
+)
+
+/**
+ * A user-submitted online consultation request. SwasthAI tracks the request
+ * (no live video/audio): it is stored offline, queued for backend sync, and
+ * its status is polled from the health network.
+ */
+data class ConsultationRequest(
+    val id: String,
+    val userId: String,
+    val screeningId: String? = null,
+    val reason: String,
+    val urgency: String = "NORMAL",
+    val patientName: String,
+    val patientAge: Int? = null,
+    val patientSex: String? = null,
+    val patientConditions: List<String> = emptyList(),
+    val status: ConsultationRequestStatus = ConsultationRequestStatus.REQUESTED,
+    val createdAt: Long = System.currentTimeMillis()
 )

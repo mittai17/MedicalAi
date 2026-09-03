@@ -1,0 +1,1 @@
+/home/mittai/Documents/medi/MedicalAi/SwasthAI/app/src/main/cpp/CMakeLists.txt

@@ -32,16 +32,15 @@ import com.swasthai.app.core.theme.SwasthAIColors
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ConnectProvidersScreen(
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onOpenConsultation: () -> Unit = {}
 ) {
     val context = LocalContext.current
 
     Scaffold(
         topBar = {
             SwasthAITopBar(
-                title = "Connect & Providers",
-                showBackButton = true,
-                onBackClick = onBack
+                title = "Connect & Providers"
             )
         }
     ) { paddingValues ->
@@ -100,6 +99,16 @@ fun ConnectProvidersScreen(
                     val intent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:104"))
                     context.startActivity(intent)
                 }
+            )
+
+            // Online Consultation (request tracker)
+            ConnectOptionCard(
+                icon = Icons.Filled.VideoChat,
+                title = "Online Consultation",
+                subtitle = "Request a consultation with a health professional",
+                iconColor = MaterialTheme.colorScheme.tertiary,
+                containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                onClick = onOpenConsultation
             )
 
             // Government helplines

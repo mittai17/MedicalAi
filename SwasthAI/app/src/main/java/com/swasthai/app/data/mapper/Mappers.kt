@@ -161,6 +161,28 @@ fun Symptom.toEntity() = SymptomRecordEntity(
 )
 
 // ═══════════════════════════════════════
+// IMAGE RECORD MAPPERS
+// ═══════════════════════════════════════
+
+fun ImageRecordEntity.toDomain() = ImageRecord(
+    id = id,
+    screeningId = screeningId,
+    imagePath = imagePath,
+    imageType = imageType,
+    analysisResult = analysisResult,
+    confidence = confidence
+)
+
+fun ImageRecord.toEntity() = ImageRecordEntity(
+    id = id,
+    screeningId = screeningId,
+    imagePath = imagePath,
+    imageType = imageType,
+    analysisResult = analysisResult,
+    confidence = confidence
+)
+
+// ═══════════════════════════════════════
 // DIAGNOSIS RESULT MAPPERS
 // ═══════════════════════════════════════
 
@@ -173,6 +195,10 @@ fun DiagnosisResultEntity.toDomain() = DiagnosisResult(
     differentialDiagnosis = differentialDiagnosis?.split("|")?.filter { it.isNotBlank() } ?: emptyList(),
     createdAt = createdAt
 )
+
+/** Entity → domain, attaching the stored recommendations for that result. */
+fun DiagnosisResultEntity.toDomain(recommendations: List<Recommendation>) =
+    toDomain().copy(recommendations = recommendations)
 
 fun DiagnosisResult.toEntity() = DiagnosisResultEntity(
     id = id,
@@ -254,4 +280,37 @@ fun Referral.toEntity() = ReferralEntity(
     notes = notes,
     status = status.name,
     scheduledDate = scheduledDate
+)
+
+// ═══════════════════════════════════════
+// CONSULTATION REQUEST MAPPERS
+// ═══════════════════════════════════════
+
+fun ConsultationRequestEntity.toDomain() = ConsultationRequest(
+    id = id,
+    userId = userId,
+    screeningId = screeningId,
+    reason = reason,
+    urgency = urgency,
+    patientName = patientName,
+    patientAge = patientAge,
+    patientSex = patientSex,
+    patientConditions = patientConditions.split(",").filter { it.isNotBlank() },
+    status = try { ConsultationRequestStatus.valueOf(status) }
+        catch (_: Exception) { ConsultationRequestStatus.REQUESTED },
+    createdAt = createdAt
+)
+
+fun ConsultationRequest.toEntity() = ConsultationRequestEntity(
+    id = id,
+    userId = userId,
+    screeningId = screeningId,
+    reason = reason,
+    urgency = urgency,
+    patientName = patientName,
+    patientAge = patientAge,
+    patientSex = patientSex,
+    patientConditions = patientConditions.joinToString(","),
+    status = status.name,
+    createdAt = createdAt
 )

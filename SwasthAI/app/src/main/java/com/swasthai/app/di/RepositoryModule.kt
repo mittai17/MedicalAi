@@ -1,5 +1,7 @@
 package com.swasthai.app.di
 
+import com.swasthai.app.core.reminders.FollowUpScheduler
+import com.swasthai.app.data.local.database.dao.ConsultationRequestDao
 import com.swasthai.app.data.local.database.dao.PatientDao
 import com.swasthai.app.data.local.database.dao.ReferralDao
 import com.swasthai.app.data.local.database.dao.ReportDao
@@ -12,11 +14,14 @@ import com.swasthai.app.data.repository.PatientRepositoryImpl
 import com.swasthai.app.data.repository.ScreeningRepositoryImpl
 import com.swasthai.app.data.repository.ReportRepositoryImpl
 import com.swasthai.app.data.repository.SyncRepositoryImpl
+import com.swasthai.app.data.repository.SyncUploader
+import com.swasthai.app.data.repository.ConsultationRepositoryImpl
 import com.swasthai.app.domain.repository.AuthRepository
 import com.swasthai.app.domain.repository.PatientRepository
 import com.swasthai.app.domain.repository.ScreeningRepository
 import com.swasthai.app.domain.repository.ReportRepository
 import com.swasthai.app.domain.repository.SyncRepository
+import com.swasthai.app.domain.repository.ConsultationRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -51,8 +56,13 @@ object RepositoryModule {
     @Singleton
     fun provideScreeningRepository(
         screeningDao: ScreeningDao,
-        syncQueueDao: SyncQueueDao
-    ): ScreeningRepository = ScreeningRepositoryImpl(screeningDao, syncQueueDao)
+        syncQueueDao: SyncQueueDao,
+        followUpScheduler: FollowUpScheduler
+    ): ScreeningRepository {
+        val repository = ScreeningRepositoryImpl(screeningDao, syncQueueDao, followUpScheduler)
+        // Referenced here so the constructor stays the public API surface.
+        return repository
+    }
 
     @Provides
     @Singleton
@@ -64,6 +74,16 @@ object RepositoryModule {
     @Provides
     @Singleton
     fun provideSyncRepository(
-        syncQueueDao: SyncQueueDao
-    ): SyncRepository = SyncRepositoryImpl(syncQueueDao)
+        syncQueueDao: SyncQueueDao,
+        syncUploader: SyncUploader
+    ): SyncRepository = SyncRepositoryImpl(syncQueueDao, syncUploader)
+
+    @Provides
+    @Singleton
+    fun provideConsultationRepository(
+        consultationRequestDao: ConsultationRequestDao,
+        syncQueueDao: SyncQueueDao,
+        userPreferences: UserPreferences
+    ): ConsultationRepository =
+        ConsultationRepositoryImpl(consultationRequestDao, syncQueueDao, userPreferences)
 }

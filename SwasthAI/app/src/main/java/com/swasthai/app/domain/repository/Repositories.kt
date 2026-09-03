@@ -38,8 +38,10 @@ interface ScreeningRepository {
     suspend fun createScreening(screening: com.swasthai.app.domain.model.Screening): Result<String>
     suspend fun updateScreening(screening: com.swasthai.app.domain.model.Screening): Result<Unit>
     suspend fun getScreeningById(screeningId: String): com.swasthai.app.domain.model.Screening?
+    suspend fun getScreeningDetail(screeningId: String): com.swasthai.app.domain.model.ScreeningDetail?
     fun getScreeningsByUser(userId: String): Flow<List<com.swasthai.app.domain.model.Screening>>
     fun getRecentScreenings(userId: String, limit: Int = 5): Flow<List<com.swasthai.app.domain.model.Screening>>
+    fun getLatestVitals(userId: String): Flow<com.swasthai.app.domain.model.Vitals?>
     suspend fun saveVitals(vitals: com.swasthai.app.domain.model.Vitals): Result<Unit>
     suspend fun saveSymptoms(symptoms: List<com.swasthai.app.domain.model.Symptom>): Result<Unit>
     suspend fun saveDiagnosisResult(result: com.swasthai.app.domain.model.DiagnosisResult): Result<Unit>
@@ -68,4 +70,13 @@ interface SyncRepository {
     fun getPendingSyncCount(): Flow<Int>
     suspend fun syncPendingData(): Result<Int>
     suspend fun clearCompletedSyncItems()
+}
+
+/**
+ * Repository interface for the online consultation tracker.
+ */
+interface ConsultationRepository {
+    suspend fun submitRequest(request: com.swasthai.app.domain.model.ConsultationRequest): Result<Unit>
+    fun getRequestsByUser(userId: String): Flow<List<com.swasthai.app.domain.model.ConsultationRequest>>
+    suspend fun updateStatus(id: String, status: com.swasthai.app.domain.model.ConsultationRequestStatus)
 }

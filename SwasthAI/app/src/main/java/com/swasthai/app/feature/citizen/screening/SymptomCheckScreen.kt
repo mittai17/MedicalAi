@@ -13,10 +13,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.swasthai.app.core.components.*
@@ -37,16 +39,6 @@ fun SymptomCheckScreen(
     viewModel: ScreeningViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-
-    // Show vitals input or result depending on state
-    LaunchedEffect(uiState.currentStep) {
-        when (uiState.currentStep) {
-            ScreeningStep.VITALS_INPUT -> onNavigateToVitals()
-            ScreeningStep.RESULT -> onNavigateToResult()
-            else -> {}
-        }
-    }
-
     Scaffold(
         topBar = {
             SwasthAITopBar(
@@ -62,98 +54,159 @@ fun SymptomCheckScreen(
             )
         }
     ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
-            // Step indicator (1-2-3)
-            StepIndicator(
-                totalSteps = 3,
-                currentStep = when (uiState.currentStep) {
-                    ScreeningStep.SYMPTOM_SELECTION -> 1
-                    ScreeningStep.DURATION_SELECTION -> 2
-                    else -> 3
-                },
-                modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp)
-            )
+        SymptomCheckContent(
+            onNavigateToVitals = onNavigateToVitals,
+            onNavigateToResult = onNavigateToResult,
+            viewModel = viewModel,
+            modifier = Modifier.padding(paddingValues)
+        )
+    }
+}
 
-            AnimatedContent(
-                targetState = uiState.currentStep,
-                transitionSpec = {
-                    if (targetState > initialState) {
-                        slideInHorizontally { it } + fadeIn() togetherWith
-                            slideOutHorizontally { -it }
-                    } else {
-                        slideInHorizontally { -it } + fadeIn() togetherWith
-                            slideOutHorizontally { it }
-                    }
-                },
-                label = "symptom_step_transition"
-            ) { step ->
-                when (step) {
-                    ScreeningStep.SYMPTOM_SELECTION -> {
-                        SymptomSelectionStep(
-                            symptoms = uiState.availableSymptoms,
-                            otherText = uiState.otherSymptomText,
-                            onToggleSymptom = viewModel::toggleSymptom,
-                            onOtherTextChange = viewModel::updateOtherSymptomText,
-                            onNext = {
-                                if (viewModel.hasSelectedSymptoms()) {
-                                    viewModel.goToNextStep()
-                                }
-                            }
-                        )
-                    }
-                    ScreeningStep.DURATION_SELECTION -> {
-                        DurationSelectionStep(
-                            selectedDuration = uiState.selectedDuration,
-                            onSelectDuration = viewModel::selectDuration,
-                            onBack = viewModel::goToPreviousStep,
-                            onNext = {
-                                if (uiState.selectedDuration != null) {
-                                    viewModel.goToNextStep()
-                                }
-                            }
-                        )
-                    }
-                    ScreeningStep.PROCESSING -> {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.spacedBy(16.dp)
-                            ) {
-                                CircularProgressIndicator(modifier = Modifier.size(56.dp))
-                                Text(
-                                    text = "Analyzing your symptoms…",
-                                    style = MaterialTheme.typography.titleMedium
-                                )
-                                Text(
-                                    text = "Our AI engine is working",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                        }
-                    }
-                    else -> {}
+/**
+ * Scaffold-less symptom selection + duration steps, shared by the full-screen
+ * [SymptomCheckScreen] and the unified Health Check hub.
+ *
+ * Auto-navigates to the vitals step and then the result screen as the shared
+ * [ScreeningViewModel] progresses. The remembered sentinel prevents
+ * re-navigation when returning to a destination that already sat on a
+ * terminal step.
+ */
+@Composable
+fun SymptomCheckContent(
+    onNavigateToVitals: () -> Unit,
+    onNavigateToResult: () -> Unit,
+    viewModel: ScreeningViewModel,
+    modifier: Modifier = Modifier
+) {
+    val uiState by viewModel.uiState.collectAsState()
+
+    var navigatedForStep by rememberSaveable { mutableStateOf<String?>(null) }
+    LaunchedEffect(uiState.currentStep) {
+        val step = uiState.currentStep
+        if (step == ScreeningStep.SYMPTOM_SELECTION) navigatedForStep = null
+        if (step.name != navigatedForStep) {
+            when (step) {
+                ScreeningStep.VITALS_INPUT -> {
+                    navigatedForStep = step.name
+                    onNavigateToVitals()
                 }
+                ScreeningStep.RESULT -> {
+                    navigatedForStep = step.name
+                    onNavigateToResult()
+                }
+                else -> {}
             }
+        }
+    }
 
-            // Error snackbar
-            uiState.errorMessage?.let { error ->
-                Snackbar(
-                    modifier = Modifier.padding(16.dp),
-                    action = {
-                        TextButton(onClick = viewModel::clearError) {
-                            Text("Dismiss")
+    Column(
+        modifier = modifier.fillMaxSize()
+    ) {
+        // Step indicator (1-2-3)
+        StepIndicator(
+            totalSteps = 3,
+            currentStep = when (uiState.currentStep) {
+                ScreeningStep.SYMPTOM_SELECTION -> 1
+                ScreeningStep.DURATION_SELECTION -> 2
+                else -> 3
+            },
+            modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp)
+        )
+
+        AnimatedContent(
+            targetState = uiState.currentStep,
+            transitionSpec = {
+                if (targetState > initialState) {
+                    slideInHorizontally { it } + fadeIn() togetherWith
+                        slideOutHorizontally { -it }
+                } else {
+                    slideInHorizontally { -it } + fadeIn() togetherWith
+                        slideOutHorizontally { it }
+                }
+            },
+            label = "symptom_step_transition"
+        ) { step ->
+            when (step) {
+                ScreeningStep.SYMPTOM_SELECTION -> {
+                    SymptomSelectionStep(
+                        symptoms = uiState.availableSymptoms,
+                        otherText = uiState.otherSymptomText,
+                        onToggleSymptom = viewModel::toggleSymptom,
+                        onOtherTextChange = viewModel::updateOtherSymptomText,
+                        onNext = {
+                            if (viewModel.hasSelectedSymptoms()) {
+                                viewModel.goToNextStep()
+                            }
+                        }
+                    )
+                }
+                ScreeningStep.DURATION_SELECTION -> {
+                    DurationSelectionStep(
+                        selectedDuration = uiState.selectedDuration,
+                        onSelectDuration = viewModel::selectDuration,
+                        onBack = viewModel::goToPreviousStep,
+                        onNext = {
+                            if (uiState.selectedDuration != null) {
+                                viewModel.goToNextStep()
+                            }
+                        }
+                    )
+                }
+                ScreeningStep.PROCESSING -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            CircularProgressIndicator(modifier = Modifier.size(56.dp))
+                            Text(
+                                text = "Analyzing your symptoms…",
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                            Text(
+                                text = "Our AI engine is working",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         }
                     }
-                ) { Text(error) }
+                }
+                ScreeningStep.VITALS_INPUT -> {
+                    Column(
+                        modifier = Modifier.fillMaxSize().padding(24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(20.dp)
+                    ) {
+                        Text(
+                            text = "Your symptoms are ready — the next step is to record your vitals.",
+                            style = MaterialTheme.typography.titleMedium,
+                            textAlign = TextAlign.Center
+                        )
+                        SwasthAIPrimaryButton(
+                            text = "Continue to vitals",
+                            onClick = onNavigateToVitals,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                }
+                else -> {}
             }
+        }
+
+        // Error snackbar
+        uiState.errorMessage?.let { error ->
+            Snackbar(
+                modifier = Modifier.padding(16.dp),
+                action = {
+                    TextButton(onClick = viewModel::clearError) {
+                        Text("Dismiss")
+                    }
+                }
+            ) { Text(error) }
         }
     }
 }

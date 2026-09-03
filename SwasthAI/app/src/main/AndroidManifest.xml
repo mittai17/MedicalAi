@@ -25,8 +25,18 @@
     <!-- ── Phone (Emergency Call) ── -->
     <uses-permission android:name="android.permission.CALL_PHONE" />
 
+    <!-- ── Hardware features that must not be implied as required ── -->
+    <uses-feature android:name="android.hardware.telephony" android:required="false" />
+
     <!-- ── Notifications ── -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+
+    <!-- ── Exact alarms for health reminders (users opt in) ── -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+
+    <!-- ── Re-arm reminders & sync after a reboot ── -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <!-- ── Foreground Service for Sync ── -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
@@ -34,6 +44,13 @@
 
     <!-- ── Bluetooth (Nearby Share) ── -->
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+
+    <!-- Speech recognition service visibility (Android 11+) -->
+    <queries>
+        <intent>
+            <action android:name="android.speech.RecognitionService" />
+        </intent>
+    </queries>
 
     <!-- Camera is not strictly required — user can choose gallery -->
     <uses-feature android:name="android.hardware.camera" android:required="false" />
@@ -91,6 +108,21 @@
                 android:value="androidx.startup"
                 tools:node="remove" />
         </provider>
+
+        <!-- Health reminder & follow-up alarm receiver -->
+        <receiver
+            android:name=".core.reminders.ReminderReceiver"
+            android:exported="false" />
+
+        <!-- Re-arms reminders/sync after reboot or package update -->
+        <receiver
+            android:name=".core.reminders.BootReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
 
     </application>
 

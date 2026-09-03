@@ -37,14 +37,35 @@ class AuthRepositoryImpl @Inject constructor(
 
     override suspend fun loginOffline(phone: String, password: String): Result<User> {
         return try {
-            // Bypass database check to accept any login credentials for testing
+            val passwordHash = hashPassword(password)
+
+            // 1. Prefer a locally registered account (role stored at registration).
+            userDao.authenticateUser(phone, passwordHash)?.let { entity ->
+                val user = entity.toDomain()
+                userPreferences.saveUserSession(
+                    userId = user.id,
+                    userName = user.name,
+                    userRole = user.role,
+                    phone = user.phone
+                )
+                return Result.success(user)
+            }
+
+            // 2. A number that registered but entered a wrong password.
+            if (userDao.getUserByPhone(phone) != null) {
+                return Result.failure(Exception("Incorrect password. Please try again."))
+            }
+
+            // 3. Unregistered number — create an ad-hoc local session using the
+            //    role chosen on the pre-login Role Selection screen.
+            val selectedRole = userPreferences.userRoleFlow.firstOrNull() ?: UserRole.CITIZEN
             val user = User(
                 id = UUID.randomUUID().toString(),
                 name = "Test User",
                 phone = phone,
-                role = UserRole.HEALTH_WORKER
+                role = selectedRole
             )
-            
+
             userPreferences.saveUserSession(
                 userId = user.id,
                 userName = user.name,

@@ -1,6 +1,7 @@
 package com.swasthai.app.ai.engine
 
 import com.swasthai.app.domain.model.MedicalAdvice
+import com.swasthai.app.domain.model.PatientContext
 import com.swasthai.app.domain.model.Recommendation
 import com.swasthai.app.domain.model.RiskLevel
 import com.swasthai.app.domain.model.Symptom
@@ -217,7 +218,8 @@ class ClinicalReasoningEngine(
     fun reason(
         symptoms: List<Symptom>,
         vitals: Vitals?,
-        diagnosisId: String = UUID.randomUUID().toString()
+        diagnosisId: String = UUID.randomUUID().toString(),
+        patientContext: PatientContext? = null
     ): ReasoningOutput {
         // Accumulate canonical evidence from all symptoms.
         val evidence = HashMap<String, Float>()
@@ -269,13 +271,17 @@ class ClinicalReasoningEngine(
         val topCondition = top.first
 
         // Risk: start from the condition's base risk, escalate on red-flag
-        // symptoms and dangerous vitals, and on prolonged duration.
+        // symptoms, dangerous vitals, prolonged duration and known patient
+        // context (age extremes and chronic conditions).
         val redFlagHits = evidence.keys.any { it in ClinicalKnowledge.RED_FLAG_SYMPTOMS }
         val vitalsRisk = assessVitalsRisk(vitals)
         val prolonged = symptoms.any {
             ClinicalKnowledge.durationRiskEscalation(it.duration)
         }
-        val riskLevel = computeRisk(topCondition, redFlagHits, vitalsRisk, prolonged)
+        val contextEscalation = contextEscalations(evidence, vitals, patientContext)
+        val riskLevel = computeRisk(
+            topCondition, redFlagHits, vitalsRisk, prolonged, contextEscalation
+        )
 
         // Differential: the next-best conditions by evidence.
         val differential = ranked.drop(1).map { it.first.name }.take(4)
@@ -319,11 +325,68 @@ class ClinicalReasoningEngine(
         return risk
     }
 
+    /**
+     * Patient-context risk escalation (0..1). Only escalates on real facts:
+     *  - age extremes (≤5 or ≥60) raise clinical concern generally;
+     *  - a known chronic condition that is aggravated by the reported
+     *    presentation (e.g. hypertension + very high BP, diabetes + sugar
+     *    symptoms, asthma/COPD + breathing difficulty) raises concern.
+     */
+    private fun contextEscalations(
+        evidence: Map<String, Float>,
+        vitals: Vitals?,
+        patientContext: PatientContext?
+    ): Int {
+        val context = patientContext ?: return 0
+        var escalation = 0
+
+        val age = context.age
+        if (age != null && (age <= 5 || age >= 60)) escalation = 1
+
+        val conditions = context.chronicConditions
+            .joinToString(" ")
+            .lowercase()
+
+        val hasHypertension = conditions.contains("hypertension") ||
+            conditions.contains("high bp") || conditions.contains("high blood pressure")
+        val hasDiabetes = conditions.contains("diabetes") || conditions.contains("sugar")
+        val hasLungDisease = conditions.contains("asthma") || conditions.contains("copd")
+        val hasHeartDisease = conditions.contains("heart") || conditions.contains("cardiac")
+
+        if (hasHypertension) {
+            val raw = vitals?.bloodPressure ?: ""
+            val parts = raw.split("/")
+            val sys = parts.getOrNull(0)?.trim()?.toIntOrNull()
+            val dia = parts.getOrNull(1)?.trim()?.toIntOrNull()
+            if (sys != null && sys >= 160 || dia != null && dia >= 100) escalation = 1
+        }
+        if (hasDiabetes &&
+            (evidence.containsKey("polyuria") || evidence.containsKey("irregular_sugar_level"))
+        ) {
+            escalation = 1
+        }
+        if (hasLungDisease &&
+            (evidence.containsKey("breathing_difficulty") || evidence.containsKey("wheezing"))
+        ) {
+            escalation = 1
+        }
+        if (hasHeartDisease &&
+            (evidence.containsKey("chest_pain") ||
+                evidence.containsKey("palpitations") ||
+                evidence.containsKey("breathing_difficulty"))
+        ) {
+            escalation = 1
+        }
+
+        return escalation
+    }
+
     private fun computeRisk(
         condition: ClinicalKnowledge.Condition,
         redFlag: Boolean,
         vitalsRisk: Int,
-        prolonged: Boolean
+        prolonged: Boolean,
+        contextEscalation: Int = 0
     ): RiskLevel {
         val base = when (condition.baseRisk) {
             RiskLevel.HIGH -> 3
@@ -334,6 +397,7 @@ class ClinicalReasoningEngine(
         if (condition.redFlag || redFlag) level = maxOf(level, 3)
         level = maxOf(level, 1 + vitalsRisk)
         if (prolonged) level = minOf(level + 1, 3)
+        level = minOf(level + contextEscalation, 3)
         return when {
             level >= 3 -> RiskLevel.HIGH
             level == 2 -> RiskLevel.MODERATE

@@ -2,12 +2,14 @@ package com.swasthai.app.data.local.database
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
+import com.swasthai.app.data.local.database.dao.ConsultationRequestDao
 import com.swasthai.app.data.local.database.dao.PatientDao
 import com.swasthai.app.data.local.database.dao.ReferralDao
 import com.swasthai.app.data.local.database.dao.ReportDao
 import com.swasthai.app.data.local.database.dao.ScreeningDao
 import com.swasthai.app.data.local.database.dao.SyncQueueDao
 import com.swasthai.app.data.local.database.dao.UserDao
+import com.swasthai.app.data.local.database.entity.ConsultationRequestEntity
 import com.swasthai.app.data.local.database.entity.DiagnosisResultEntity
 import com.swasthai.app.data.local.database.entity.ImageRecordEntity
 import com.swasthai.app.data.local.database.entity.PatientEntity
@@ -39,9 +41,10 @@ import com.swasthai.app.data.local.database.entity.VitalsEntity
         RecommendationEntity::class,
         ReportEntity::class,
         ReferralEntity::class,
-        SyncQueueEntity::class
+        SyncQueueEntity::class,
+        ConsultationRequestEntity::class
     ],
-    version = 2,
+    version = 3,
     exportSchema = true
 )
 abstract class SwasthAIDatabase : RoomDatabase() {
@@ -52,6 +55,7 @@ abstract class SwasthAIDatabase : RoomDatabase() {
     abstract fun reportDao(): ReportDao
     abstract fun referralDao(): ReferralDao
     abstract fun syncQueueDao(): SyncQueueDao
+    abstract fun consultationRequestDao(): ConsultationRequestDao
 
     companion object {
         const val DATABASE_NAME = "swasthai_database"

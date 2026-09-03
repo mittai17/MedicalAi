@@ -52,6 +52,26 @@ android {
         jvmTarget = "17"
     }
 
+    // Native C/C++ AI kernels (hybrid Kotlin + NDK).
+    ndkVersion = "27.0.12077973"
+
+    externalNativeBuild {
+        cmake {
+            path = file("src/main/cpp/CMakeLists.txt")
+            version = "3.22.1"
+        }
+    }
+
+    defaultConfig {
+        externalNativeBuild {
+            cmake {
+                cppFlags += "-std=c++17"
+                // The on-device AI targets every real-world ABI.
+                abiFilters += listOf("arm64-v8a", "armeabi-v7a", "x86", "x86_64")
+            }
+        }
+    }
+
     buildFeatures {
         compose = true
         buildConfig = true
@@ -110,14 +130,10 @@ dependencies {
     // ── WorkManager ──
     implementation(libs.work.runtime.ktx)
 
-    // ── Networking ──
-    implementation(libs.retrofit)
-    implementation(libs.retrofit.converter.moshi)
-    implementation(libs.okhttp)
-    implementation(libs.okhttp.logging)
-    implementation(libs.moshi)
-    implementation(libs.moshi.kotlin)
-    ksp(libs.moshi.codegen)
+    // ── Networking (Ktor) ──
+    implementation(libs.ktor.client.core)
+    implementation(libs.ktor.client.android)
+    debugImplementation(libs.ktor.client.logging)
 
     // ── TensorFlow Lite ──
     implementation(libs.tensorflow.lite)
@@ -155,4 +171,22 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
+}
+
+// ── Hot Reload dev loop ──
+// `./gradlew :app:hotReloadDebug -t` watches Kotlin/Compose sources and, on
+// every save, incrementally rebuilds, reinstalls, and relaunches the app.
+// Pick a target device with -Pdevice=<serial> (e.g. -Pdevice=emulator-5554).
+// See hot_reload.sh for a friendly wrapper that auto-detects the device.
+tasks.register<Exec>("hotReloadDebug") {
+    dependsOn("installDebug")
+    group = "run"
+    description = "Install the debug APK and relaunch MainActivity. Use with -t or --continuous to watch sources for hot reload."
+
+    val launchArgs = mutableListOf("shell", "am", "start", "-n", "com.swasthai.app/.MainActivity")
+    providers.gradleProperty("device").orNull?.let { serial ->
+        launchArgs.add(0, serial)
+        launchArgs.add(0, "-s")
+    }
+    commandLine("adb", *launchArgs.toTypedArray())
 }

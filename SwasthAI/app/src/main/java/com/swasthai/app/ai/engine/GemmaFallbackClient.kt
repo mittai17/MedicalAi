@@ -46,25 +46,22 @@ class GemmaFallbackClient @Inject constructor(
         return try {
         val symptomNames = symptoms.map { it.name }
 
-        val response = apiService.getAiFallback(
+        val body = apiService.getAiFallback(
             mapOf(
                 "symptoms" to symptomNames,
                 "vitals" to buildVitalsMap(vitals),
                 "voiceTranscript" to (voiceTranscript ?: ""),
                 "scanType" to scanType.name
             )
-        )
+        ) ?: return null
 
-        if (!response.isSuccessful) return null
-
-        val body = response.body() ?: return null
-        val predicted = body["predictedDisease"] as? String ?: return null
+        val predicted = body.optString("predictedDisease").ifBlank { return null }
 
         FallbackResult(
             predictedDisease = predicted,
-            advice = body["advice"] as? String,
-            provider = body["provider"] as? String ?: "unknown",
-            confidence = (body["confidence"] as? Number)?.toFloat()
+            advice = body.optString("advice").ifBlank { null },
+            provider = body.optString("provider", "unknown"),
+            confidence = if (body.has("confidence")) body.optDouble("confidence").toFloat() else null
         )
         } catch (e: Exception) {
             null

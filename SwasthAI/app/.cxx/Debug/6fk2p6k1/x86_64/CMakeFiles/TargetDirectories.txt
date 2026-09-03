@@ -1,0 +1,3 @@
+/home/mittai/Documents/medi/MedicalAi/SwasthAI/app/.cxx/Debug/6fk2p6k1/x86_64/CMakeFiles/swasthai_ai.dir
+/home/mittai/Documents/medi/MedicalAi/SwasthAI/app/.cxx/Debug/6fk2p6k1/x86_64/CMakeFiles/edit_cache.dir
+/home/mittai/Documents/medi/MedicalAi/SwasthAI/app/.cxx/Debug/6fk2p6k1/x86_64/CMakeFiles/rebuild_cache.dir

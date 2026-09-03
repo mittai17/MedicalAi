@@ -36,9 +36,7 @@ fun HealthRecordsScreen(
     Scaffold(
         topBar = {
             SwasthAITopBar(
-                title = "Health Records",
-                showBackButton = true,
-                onBackClick = onBack
+                title = "Health Records"
             )
         }
     ) { paddingValues ->
@@ -151,7 +149,7 @@ private fun ScreeningsTab(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(screenings) { record ->
+            items(screenings, key = { it.id }, contentType = { "screening" }) { record ->
                 ScreeningRecordCard(
                     record = record,
                     onClick = { onItemClick(record.id) }
@@ -169,7 +167,9 @@ private fun ScreeningRecordCard(
     ElevatedCard(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(14.dp)
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 1.dp)
     ) {
         Row(
             modifier = Modifier
@@ -179,21 +179,26 @@ private fun ScreeningRecordCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Row(
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                horizontalArrangement = Arrangement.spacedBy(14.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.weight(1f)
             ) {
-                Icon(
-                    imageVector = when (record.screeningType) {
-                        com.swasthai.app.domain.model.ScreeningType.VOICE_ASSISTANT -> Icons.Filled.Mic
-                        com.swasthai.app.domain.model.ScreeningType.IMAGE_CHECK -> Icons.Filled.CameraAlt
-                        else -> Icons.Filled.Checklist
-                    },
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(24.dp)
-                )
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Surface(
+                    shape = RoundedCornerShape(14.dp),
+                    color = MaterialTheme.colorScheme.primaryContainer
+                ) {
+                    Icon(
+                        imageVector = when (record.screeningType) {
+                            com.swasthai.app.domain.model.ScreeningType.VOICE_ASSISTANT -> Icons.Filled.Mic
+                            com.swasthai.app.domain.model.ScreeningType.IMAGE_CHECK -> Icons.Filled.CameraAlt
+                            else -> Icons.Filled.Checklist
+                        },
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                        modifier = Modifier.padding(10.dp).size(22.dp)
+                    )
+                }
+                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     Text(
                         text = record.title,
                         style = MaterialTheme.typography.titleSmall,
@@ -254,7 +259,7 @@ private fun ReportsTab(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(reports) { report ->
+            items(reports, key = { it.id }, contentType = { "report" }) { report ->
                 ReportCard(report = report, onShare = { onShare(report.screeningId) })
             }
         }
@@ -268,7 +273,9 @@ private fun ReportCard(
 ) {
     ElevatedCard(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(14.dp)
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 1.dp)
     ) {
         Row(
             modifier = Modifier
@@ -278,12 +285,22 @@ private fun ReportCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Row(
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                horizontalArrangement = Arrangement.spacedBy(14.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.weight(1f)
             ) {
-                Icon(Icons.Filled.Description, null, tint = MaterialTheme.colorScheme.secondary, modifier = Modifier.size(24.dp))
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Surface(
+                    shape = RoundedCornerShape(14.dp),
+                    color = MaterialTheme.colorScheme.secondaryContainer
+                ) {
+                    Icon(
+                        Icons.Filled.Description,
+                        null,
+                        tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                        modifier = Modifier.padding(10.dp).size(22.dp)
+                    )
+                }
+                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     Text(report.patientName, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
                     Text(
                         java.text.SimpleDateFormat("dd MMM yyyy", java.util.Locale.getDefault()).format(java.util.Date(report.generatedAt)),

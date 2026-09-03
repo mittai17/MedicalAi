@@ -12,8 +12,6 @@ import androidx.navigation.compose.rememberNavController
 import androidx.work.WorkManager
 import com.swasthai.app.core.utils.NetworkMonitor
 import com.swasthai.app.domain.model.UserRole
-import com.swasthai.app.feature.auth.LoginScreen
-import com.swasthai.app.feature.auth.RegisterScreen
 import com.swasthai.app.feature.onboarding.LanguageSelectionScreen
 import com.swasthai.app.feature.onboarding.RoleSelectionScreen
 import com.swasthai.app.feature.onboarding.SplashScreen
@@ -24,9 +22,10 @@ import com.swasthai.app.sync.SyncWorker
  * Root NavHost for SwasthAI.
  *
  * Manages navigation flow:
- * Splash → Welcome → Language → Role → Login → Dashboard (Citizen or HW)
+ * Splash → Welcome → Language → Role → Dashboard (Citizen or HW)
  *
  * Citizen and Health Worker sub-graphs are nested for clean separation.
+ * Login is not required — choosing a role drops you straight into its dashboard.
  */
 @Composable
 fun SwasthAINavHost(
@@ -55,7 +54,7 @@ fun SwasthAINavHost(
                 onNavigateToDashboard = { role ->
                     val destination = when (role) {
                         UserRole.HEALTH_WORKER -> Screen.HWDashboard.route
-                        else -> Screen.CitizenDashboard.route
+                        else -> Screen.CitizenHome.route
                     }
                     navController.navigate(destination) {
                         popUpTo(Screen.Splash.route) { inclusive = true }
@@ -82,47 +81,29 @@ fun SwasthAINavHost(
 
         composable(Screen.RoleSelection.route) {
             RoleSelectionScreen(
-                onContinue = {
-                    navController.navigate(Screen.Login.route)
+                onContinue = { role ->
+                    val destination = when (role) {
+                        UserRole.HEALTH_WORKER -> Screen.HWDashboard.route
+                        else -> Screen.CitizenHome.route
+                    }
+                    navController.navigate(destination) {
+                        popUpTo(Screen.RoleSelection.route) { inclusive = true }
+                    }
                 }
             )
         }
 
-        // ── Auth ──
-        composable(Screen.Login.route) {
-            LoginScreen(
-                onLoginSuccess = { role ->
-                    val destination = when (role) {
-                        UserRole.HEALTH_WORKER -> Screen.HWDashboard.route
-                        else -> Screen.CitizenDashboard.route
+        // ── Citizen Shell (persistent bottom navigation) ──
+        composable(Screen.CitizenHome.route) {
+            CitizenMainScreen(
+                rootNavController = navController,
+                logout = {
+                    navController.navigate(Screen.RoleSelection.route) {
+                        popUpTo(Screen.CitizenHome.route) { inclusive = true }
                     }
-                    navController.navigate(destination) {
-                        popUpTo(Screen.Login.route) { inclusive = true }
-                    }
-                },
-                onRegister = {
-                    navController.navigate(Screen.Register.route)
                 }
             )
         }
-
-        composable(Screen.Register.route) {
-            RegisterScreen(
-                onRegisterSuccess = { role ->
-                    val destination = when (role) {
-                        UserRole.HEALTH_WORKER -> Screen.HWDashboard.route
-                        else -> Screen.CitizenDashboard.route
-                    }
-                    navController.navigate(destination) {
-                        popUpTo(Screen.Register.route) { inclusive = true }
-                    }
-                },
-                onBack = { navController.popBackStack() }
-            )
-        }
-
-        // ── Citizen Nav Graph ──
-        citizenNavGraph(navController)
 
         // ── Health Worker Nav Graph ──
         healthWorkerNavGraph(navController, networkMonitor)

@@ -63,10 +63,13 @@ class RecordsViewModel @Inject constructor(
                 combine(
                     screeningRepository.getScreeningsByUser(userId),
                     reportRepository.getAllReports()
-                ) { screenings, reports ->
+                ) { screenings, allReports ->
+                    // Reports belong to the current user only when their
+                    // screening id is in this user's screening list.
+                    val userScreeningIds = screenings.map { it.id }.toSet()
                     RecordsUiState(
                         screenings = screenings.map { it.toRecord() },
-                        reports = reports,
+                        reports = allReports.filter { it.screeningId in userScreeningIds },
                         isLoading = false
                     )
                 }.collect { _uiState.value = it }

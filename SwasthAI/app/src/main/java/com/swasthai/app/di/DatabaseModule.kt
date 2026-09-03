@@ -3,6 +3,7 @@ package com.swasthai.app.di
 import android.content.Context
 import androidx.room.Room
 import com.swasthai.app.data.local.database.SwasthAIDatabase
+import com.swasthai.app.data.local.database.dao.ConsultationRequestDao
 import com.swasthai.app.data.local.database.dao.PatientDao
 import com.swasthai.app.data.local.database.dao.ReferralDao
 import com.swasthai.app.data.local.database.dao.ReportDao
@@ -62,4 +63,8 @@ object DatabaseModule {
 
     @Provides
     fun provideSyncQueueDao(database: SwasthAIDatabase): SyncQueueDao = database.syncQueueDao()
+
+    @Provides
+    fun provideConsultationRequestDao(database: SwasthAIDatabase): ConsultationRequestDao =
+        database.consultationRequestDao()
 }
