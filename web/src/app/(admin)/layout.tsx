@@ -18,8 +18,6 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         { href: "/vitals", label: "Vitals" },
         { href: "/referrals", label: "Referrals" },
         { href: "/analytics", label: "Analytics" },
-        { href: "/sync", label: "Offline Sync" },
-        { href: "/tools/symptom-check", label: "Symptom Check" },
       ]}
     >
       {children}

@@ -52,11 +52,10 @@ export default async function AnalyticsPage() {
   let error: string | null = null;
 
   try {
-    const [s, sc, w, patients] = await Promise.all([
+    const [s, sc, w] = await Promise.all([
       api.getStats(token),
       api.getScreenings(token),
       api.getUsers(token, "health_worker"),
-      api.getPatients(token),
     ]);
     stats = s;
     screenings = sc;
@@ -64,7 +63,6 @@ export default async function AnalyticsPage() {
     workerLoad = await Promise.all(
       w.map(async (worker) => (await api.getWorkerPatients(token, worker.id)).length),
     );
-    void patients;
   } catch (err) {
     error = err instanceof Error ? err.message : "Could not reach the backend";
   }

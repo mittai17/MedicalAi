@@ -31,7 +31,7 @@ SEEDED_FLAG = "swasthai_seeded_v1"
 
 
 def _seed_demo_data(db: Session) -> None:
-    """Seed representative demo records so the govt admin console has data on
+    """Seed a realistic demo dataset so the govt admin console has content on
     first launch. Runs once per database (idempotent via the users table)."""
     if db.query(models.User).first():
         return
@@ -40,44 +40,123 @@ def _seed_demo_data(db: Session) -> None:
         models.User(username="asha", password="pass", email="asha@example.org", role="health_worker"),
         models.User(username="pragya", password="pass", email="pragya@example.org", role="health_worker"),
         models.User(username="vijay", password="pass", email="vijay@example.org", role="health_worker"),
+        models.User(username="rohan", password="pass", email="rohan@example.org", role="health_worker"),
+        models.User(username="kavita", password="pass", email="kavita@example.org", role="health_worker"),
     ]
     citizens = [
         models.User(username="meera", password="pass", email="meera@example.org", role="citizen"),
         models.User(username="raman", password="pass", email="raman@example.org", role="citizen"),
         models.User(username="lakshmi", password="pass", email="lakshmi@example.org", role="citizen"),
+        models.User(username="sudha", password="pass", email="sudha@example.org", role="citizen"),
+        models.User(username="anil", password="pass", email="anil@example.org", role="citizen"),
+        models.User(username="priya", password="pass", email="priya@example.org", role="citizen"),
+        models.User(username="deepak", password="pass", email="deepak@example.org", role="citizen"),
     ]
     db.add_all(workers + citizens)
     db.commit()
     for u in workers + citizens:
         db.refresh(u)
 
+    def worker_id(index: int) -> dict:
+        return {"workerId": str(workers[index].id)}
+
     patients = [
         models.Patient(id="P-1001", name="Meera Nair", age=42, gender="female",
-                       contact="98xxxxx01", data={"workerId": str(workers[0].id)}),
+                       contact="9830040001", data={**worker_id(0), "village": "Amrokha", "enrolled": "2026-08-02"}),
         models.Patient(id="P-1002", name="Raman Iyer", age=58, gender="male",
-                       contact="98xxxxx02", data={"workerId": str(workers[1].id)}),
+                       contact="9830040002", data={**worker_id(1), "village": "Chandpur", "enrolled": "2026-08-04"}),
         models.Patient(id="P-1003", name="Lakshmi Devi", age=6, gender="female",
-                       contact="98xxxxx03", data={"workerId": str(workers[0].id)}),
+                       contact="9830040003", data={**worker_id(0), "village": "Amrokha", "enrolled": "2026-08-05"}),
+        models.Patient(id="P-1004", name="Sudha Patil", age=35, gender="female",
+                       contact="9830040004", data={**worker_id(3), "village": "Beldi", "enrolled": "2026-08-07"}),
+        models.Patient(id="P-1005", name="Anil Kumar", age=47, gender="male",
+                       contact="9830040005", data={**worker_id(2), "village": "Rampur", "enrolled": "2026-08-09"}),
+        models.Patient(id="P-1006", name="Priya Menon", age=29, gender="female",
+                       contact="9830040006", data={**worker_id(0), "village": "Amrokha", "enrolled": "2026-08-11"}),
+        models.Patient(id="P-1007", name="Deepak Sharma", age=62, gender="male",
+                       contact="9830040007", data={**worker_id(1), "village": "Chandpur", "enrolled": "2026-08-14"}),
+        models.Patient(id="P-1008", name="Sunita Verma", age=50, gender="female",
+                       contact="9830040008", data={**worker_id(4), "village": "Kotri", "enrolled": "2026-08-16"}),
+        models.Patient(id="P-1009", name="Gopal Das", age=38, gender="male",
+                       contact="9830040009", data={**worker_id(2), "village": "Rampur", "enrolled": "2026-08-19"}),
+        models.Patient(id="P-1010", name="Ritu Singh", age=24, gender="female",
+                       contact="9830040010", data={**worker_id(3), "village": "Beldi", "enrolled": "2026-08-22"}),
+        models.Patient(id="P-1011", name="Manoj Pillai", age=55, gender="male",
+                       contact="9830040011", data={**worker_id(1), "village": "Chandpur", "enrolled": "2026-08-25"}),
+        models.Patient(id="P-1012", name="Aarohi Gupta", age=8, gender="female",
+                       contact="9830040012", data={**worker_id(4), "village": "Kotri", "enrolled": "2026-08-27"}),
+        models.Patient(id="P-1013", name="Suresh Naik", age=44, gender="male",
+                       contact="9830040013", data={**worker_id(0), "village": "Amrokha", "enrolled": "2026-08-29"}),
+        models.Patient(id="P-1014", name="Kavita Reddy", age=66, gender="female",
+                       contact="9830040014", data={**worker_id(2), "village": "Rampur", "enrolled": "2026-09-01"}),
     ]
     db.add_all(patients)
     db.commit()
 
+    def screening(sid: str, pid: str, typ: str, result: str, confidence: float,
+                  wi: int, symptoms=None, transcript=None, date: str = "2026-09-01"):
+        details = {
+            "result": result, "confidence": confidence, "workerId": str(workers[wi].id),
+            "screeningDate": date, "type": typ,
+        }
+        if symptoms is not None:
+            details["symptoms"] = symptoms
+        if transcript is not None:
+            details["voiceTranscript"] = transcript
+        return models.Screening(id=sid, patient_id=pid, type=typ, result=result,
+                                confidence=confidence, details=details)
+
     screenings = [
-        models.Screening(id="S-2001", patient_id="P-1001", type="SYMPTOM_CHECK",
-                         result="Influenza (Flu)", confidence=0.62,
-                         details={"result": "Influenza (Flu)", "confidence": 0.62,
-                                  "symptoms": ["Fever", "Cough", "Headache"],
-                                  "workerId": str(workers[0].id)}),
-        models.Screening(id="S-2002", patient_id="P-1002", type="SYMPTOM_CHECK",
-                         result="Pneumonia", confidence=0.74,
-                         details={"result": "Pneumonia", "confidence": 0.74,
-                                  "symptoms": ["Fever", "Cough", "Difficulty Breathing"],
-                                  "workerId": str(workers[1].id)}),
-        models.Screening(id="S-2003", patient_id="P-1003", type="VOICE",
-                         result="Dengue", confidence=0.53,
-                         details={"result": "Dengue", "confidence": 0.53,
-                                  "voiceTranscript": "fever, body ache, rash",
-                                  "workerId": str(workers[0].id)}),
+        screening("S-2001", "P-1001", "SYMPTOM_CHECK", "Influenza (Flu)", 0.62, 0,
+                  ["Fever", "Cough", "Headache"], date="2026-08-03"),
+        screening("S-2002", "P-1002", "SYMPTOM_CHECK", "Pneumonia", 0.74, 1,
+                  ["Fever", "Cough", "Difficulty Breathing"], date="2026-08-05"),
+        screening("S-2003", "P-1003", "VOICE", "Dengue", 0.53, 0,
+                  transcript="fever, body ache, rash", date="2026-08-06"),
+        screening("S-2004", "P-1004", "SYMPTOM_CHECK", "Typhoid", 0.71, 3,
+                  ["Fever", "Abdominal Pain", "Headache"], date="2026-08-08"),
+        screening("S-2005", "P-1005", "SYMPTOM_CHECK", "Hypertension Risk", 0.66, 2,
+                  ["Headache", "Dizziness", "Fatigue"], date="2026-08-10"),
+        screening("S-2006", "P-1006", "SYMPTOM_CHECK", "Common Cold", 0.48, 0,
+                  ["Runny Nose", "Cough", "Sore Throat"], date="2026-08-12"),
+        screening("S-2007", "P-1007", "SYMPTOM_CHECK", "Tuberculosis", 0.69, 1,
+                  ["Persistent Cough", "Weight Loss", "Night Sweats"], date="2026-08-15"),
+        screening("S-2008", "P-1008", "SYMPTOM_CHECK", "Anemia", 0.57, 4,
+                  ["Fatigue", "Pale Skin", "Shortness of Breath"], date="2026-08-17"),
+        screening("S-2009", "P-1009", "VOICE", "Gastroenteritis", 0.45, 2,
+                  transcript="stomach pain, loose stools", date="2026-08-20"),
+        screening("S-2010", "P-1010", "SYMPTOM_CHECK", "Dengue", 0.78, 3,
+                  ["Fever", "Rash", "Joint Pain"], date="2026-08-23"),
+        screening("S-2011", "P-1011", "SYMPTOM_CHECK", "Malaria", 0.72, 1,
+                  ["Fever", "Chills", "Body Ache"], date="2026-08-26"),
+        screening("S-2012", "P-1012", "VOICE", "Influenza (Flu)", 0.41, 4,
+                  transcript="cold, fever, sneezing", date="2026-08-28"),
+        screening("S-2013", "P-1013", "SYMPTOM_CHECK", "Urinary Tract Infection", 0.53, 0,
+                  ["Burning Urination", "Frequent Urination", "Fever"], date="2026-08-30"),
+        screening("S-2014", "P-1014", "SYMPTOM_CHECK", "Hypertension Risk", 0.61, 2,
+                  ["Headache", "Blurred Vision", "Palpitations"], date="2026-09-02"),
+        screening("S-2015", "P-1001", "SYMPTOM_CHECK", "Viral Fever", 0.35, 0,
+                  ["Fever", "Body Ache"], date="2026-09-03"),
+        screening("S-2016", "P-1002", "SYMPTOM_CHECK", "Chronic Obstructive Lung", 0.68, 1,
+                  ["Cough", "Shortness of Breath", "Wheezing"], date="2026-09-04"),
+        screening("S-2017", "P-1004", "VOICE", "Typhoid", 0.50, 3,
+                  transcript="fever, headache, weakness", date="2026-09-05"),
+        screening("S-2018", "P-1006", "SYMPTOM_CHECK", "Allergic Rhinitis", 0.44, 0,
+                  ["Sneezing", "Runny Nose", "Itchy Eyes"], date="2026-09-06"),
+        screening("S-2019", "P-1008", "SYMPTOM_CHECK", "Pneumonia", 0.76, 4,
+                  ["Fever", "Cough", "Chest Pain"], date="2026-09-07"),
+        screening("S-2020", "P-1011", "SYMPTOM_CHECK", "Pneumonia", 0.71, 1,
+                  ["Fever", "Cough", "Difficulty Breathing"], date="2026-09-08"),
+        screening("S-2021", "P-1014", "SYMPTOM_CHECK", "Diabetes Risk", 0.58, 2,
+                  ["Thirst", "Frequent Urination", "Fatigue"], date="2026-09-09"),
+        screening("S-2022", "P-1005", "VOICE", "Hypertension Risk", 0.49, 2,
+                  transcript="dizziness, headache", date="2026-09-10"),
+        screening("S-2023", "P-1010", "SYMPTOM_CHECK", "Viral Fever", 0.66, 3,
+                  ["Fever", "Headache", "Weakness"], date="2026-09-11"),
+        screening("S-2024", "P-1012", "SYMPTOM_CHECK", "Respiratory Infection", 0.62, 4,
+                  ["Cough", "Cold", "Slight Fever"], date="2026-09-12"),
+        screening("S-2025", "P-1003", "SYMPTOM_CHECK", "Dengue Follow-up", 0.38, 0,
+                  ["Mild Fever", "Rash"], date="2026-09-13"),
     ]
     db.add_all(screenings)
     db.commit()
@@ -87,6 +166,20 @@ def _seed_demo_data(db: Session) -> None:
                         reason="High-risk screening: Pneumonia", facility="District Hospital"),
         models.Referral(id="R-3002", patient_id="P-1001", status="completed",
                         reason="Persistent fever > 5 days", facility="Community Health Centre"),
+        models.Referral(id="R-3003", patient_id="P-1010", status="pending",
+                        reason="High-risk screening: Dengue — platelet monitoring", facility="District Hospital"),
+        models.Referral(id="R-3004", patient_id="P-1011", status="pending",
+                        reason="High-risk screening: Malaria follow-up", facility="Primary Health Centre"),
+        models.Referral(id="R-3005", patient_id="P-1008", status="pending",
+                        reason="High-risk screening: Pneumonia", facility="District Hospital"),
+        models.Referral(id="R-3006", patient_id="P-1007", status="pending",
+                        reason="Suspected tuberculosis — sputum test", facility="District TB Centre"),
+        models.Referral(id="R-3007", patient_id="P-1004", status="completed",
+                        reason="Typhoid treatment follow-up", facility="Community Health Centre"),
+        models.Referral(id="R-3008", patient_id="P-1002", status="completed",
+                        reason="COPD care plan review", facility="District Hospital"),
+        models.Referral(id="R-3009", patient_id="P-1014", status="pending",
+                        reason="Hypertension management review", facility="Community Health Centre"),
     ]
     db.add_all(referrals)
     db.commit()
@@ -101,6 +194,57 @@ def _seed_demo_data(db: Session) -> None:
         models.Vitals(id="V-4003", patient_id="P-1003", systolic=98, diastolic=62,
                       heart_rate=118, temperature=38.8, spo2=95,
                       data={"temperature": 38.8, "spo2": 95, "heartRate": 118, "pulse": 118}),
+        models.Vitals(id="V-4004", patient_id="P-1004", systolic=124, diastolic=80,
+                      heart_rate=76, temperature=37.1, spo2=98,
+                      data={"temperature": 37.1, "spo2": 98, "heartRate": 76, "pulse": 76}),
+        models.Vitals(id="V-4005", patient_id="P-1005", systolic=150, diastolic=96,
+                      heart_rate=88, temperature=36.9, spo2=97,
+                      data={"temperature": 36.9, "spo2": 97, "heartRate": 88, "pulse": 88}),
+        models.Vitals(id="V-4006", patient_id="P-1006", systolic=118, diastolic=76,
+                      heart_rate=72, temperature=37.4, spo2=99,
+                      data={"temperature": 37.4, "spo2": 99, "heartRate": 72, "pulse": 72}),
+        models.Vitals(id="V-4007", patient_id="P-1007", systolic=128, diastolic=84,
+                      heart_rate=84, temperature=37.8, spo2=95,
+                      data={"temperature": 37.8, "spo2": 95, "heartRate": 84, "pulse": 84}),
+        models.Vitals(id="V-4008", patient_id="P-1008", systolic=122, diastolic=80,
+                      heart_rate=70, temperature=36.8, spo2=97,
+                      data={"temperature": 36.8, "spo2": 97, "heartRate": 70, "pulse": 70}),
+        models.Vitals(id="V-4009", patient_id="P-1009", systolic=130, diastolic=86,
+                      heart_rate=90, temperature=37.2, spo2=96,
+                      data={"temperature": 37.2, "spo2": 96, "heartRate": 90, "pulse": 90}),
+        models.Vitals(id="V-4010", patient_id="P-1010", systolic=120, diastolic=78,
+                      heart_rate=112, temperature=37.9, spo2=96,
+                      data={"temperature": 37.9, "spo2": 96, "heartRate": 112, "pulse": 112}),
+        models.Vitals(id="V-4011", patient_id="P-1011", systolic=116, diastolic=74,
+                      heart_rate=98, temperature=38.6, spo2=94,
+                      data={"temperature": 38.6, "spo2": 94, "heartRate": 98, "pulse": 98}),
+        models.Vitals(id="V-4012", patient_id="P-1012", systolic=104, diastolic=66,
+                      heart_rate=108, temperature=38.9, spo2=95,
+                      data={"temperature": 38.9, "spo2": 95, "heartRate": 108, "pulse": 108}),
+        models.Vitals(id="V-4013", patient_id="P-1013", systolic=132, diastolic=86,
+                      heart_rate=82, temperature=37.6, spo2=97,
+                      data={"temperature": 37.6, "spo2": 97, "heartRate": 82, "pulse": 82}),
+        models.Vitals(id="V-4014", patient_id="P-1014", systolic=148, diastolic=94,
+                      heart_rate=92, temperature=37.0, spo2=95,
+                      data={"temperature": 37.0, "spo2": 95, "heartRate": 92, "pulse": 92}),
+        models.Vitals(id="V-4015", patient_id="P-1001", systolic=122, diastolic=80,
+                      heart_rate=84, temperature=37.2, spo2=98,
+                      data={"temperature": 37.2, "spo2": 98, "heartRate": 84, "pulse": 84}),
+        models.Vitals(id="V-4016", patient_id="P-1002", systolic=144, diastolic=94,
+                      heart_rate=106, temperature=38.5, spo2=91,
+                      data={"temperature": 38.5, "spo2": 91, "heartRate": 106, "pulse": 106}),
+        models.Vitals(id="V-4017", patient_id="P-1005", systolic=146, diastolic=94,
+                      heart_rate=74, temperature=36.8, spo2=96,
+                      data={"temperature": 36.8, "spo2": 96, "heartRate": 74, "pulse": 74}),
+        models.Vitals(id="V-4018", patient_id="P-1010", systolic=122, diastolic=78,
+                      heart_rate=114, temperature=37.5, spo2=95,
+                      data={"temperature": 37.5, "spo2": 95, "heartRate": 114, "pulse": 114}),
+        models.Vitals(id="V-4019", patient_id="P-1011", systolic=118, diastolic=76,
+                      heart_rate=96, temperature=37.9, spo2=96,
+                      data={"temperature": 37.9, "spo2": 96, "heartRate": 96, "pulse": 96}),
+        models.Vitals(id="V-4020", patient_id="P-1008", systolic=124, diastolic=82,
+                      heart_rate=68, temperature=37.3, spo2=96,
+                      data={"temperature": 37.3, "spo2": 96, "heartRate": 68, "pulse": 68}),
     ]
     db.add_all(vitals)
     db.commit()
@@ -109,8 +253,37 @@ def _seed_demo_data(db: Session) -> None:
         models.Report(id="RP-5001", patient_id="P-1002", title="Chest X-ray — Pneumonia",
                       summary="Bilateral infiltrates consistent with pneumonia. Referred for follow-up.",
                       created_at="2026-08-14"),
+        models.Report(id="RP-5002", patient_id="P-1007", title="Sputum AFB Test",
+                      summary="AFB smear negative. Culture awaited — continue monitoring.",
+                      created_at="2026-09-01"),
+        models.Report(id="RP-5003", patient_id="P-1010", title="CBC — Platelet Count",
+                      summary="Platelets 68,000/µL. Repeat count in 48 hours.",
+                      created_at="2026-09-05"),
+        models.Report(id="RP-5004", patient_id="P-1011", title="Peripheral Blood Smear",
+                      summary="Malaria parasites seen (Plasmodium vivax).",
+                      created_at="2026-09-03"),
+        models.Report(id="RP-5005", patient_id="P-1004", title="Widal Test",
+                      summary="Moderately raised O/H titres — consistent with typhoid.",
+                      created_at="2026-08-28"),
     ]
     db.add_all(reports)
+    db.commit()
+
+    symptoms = [
+        models.Symptom(id="SM-6001", patient_id="P-1001",
+                       symptoms={"symptom_list": ["Fever", "Headache"], "duration_days": 3},
+                       notes="Starts every evening"),
+        models.Symptom(id="SM-6002", patient_id="P-1002",
+                       symptoms={"symptom_list": ["Fever", "Cough", "Difficulty Breathing"], "duration_days": 5},
+                       notes="Smoker, 30 pack-years"),
+        models.Symptom(id="SM-6003", patient_id="P-1010",
+                       symptoms={"symptom_list": ["Fever", "Rash", "Joint Pain"], "duration_days": 4},
+                       notes="Recent travel to rented locality"),
+        models.Symptom(id="SM-6004", patient_id="P-1008",
+                       symptoms={"symptom_list": ["Chest Pain", "Cough"], "duration_days": 6},
+                       notes="History of asthma"),
+    ]
+    db.add_all(symptoms)
     db.commit()
 
 

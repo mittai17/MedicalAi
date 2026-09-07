@@ -120,9 +120,3 @@ export interface HealthTip {
   content: string;
   category: string;
 }
-
-export interface SyncBatchResult {
-  status: "success" | "partial_success";
-  processed_count: number;
-  errors: string[];
-}

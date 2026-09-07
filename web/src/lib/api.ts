@@ -9,7 +9,6 @@ import type {
   Report,
   Screening,
   Stats,
-  SyncBatchResult,
   VitalsRecord,
 } from "./types";
 
@@ -167,14 +166,6 @@ export const api = {
   getHealthTips(token: string): Promise<HealthTip[]> {
     return request("/health-tips", {
       headers: { Authorization: `Bearer ${token}` },
-    });
-  },
-
-  syncBatch(token: string, batch: unknown): Promise<SyncBatchResult> {
-    return request("/sync/batch", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}` },
-      body: JSON.stringify(batch),
     });
   },
 };

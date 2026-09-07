@@ -100,10 +100,10 @@ export default async function OverviewPage() {
                   Referrals
                 </Link>
                 <Link
-                  href="/tools/symptom-check"
+                  href="/analytics"
                   className="inline-flex items-center justify-center rounded-lg bg-white px-4 py-2 text-sm font-medium text-slate-700 ring-1 ring-inset ring-slate-300 hover:bg-slate-50"
                 >
-                  Symptom check
+                  Analytics
                 </Link>
               </div>
             </Card>

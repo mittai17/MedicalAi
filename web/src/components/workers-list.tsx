@@ -1,41 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import type { ManagedUser, Patient } from "@/lib/types";
 import { Badge } from "@/components/ui";
 
-export default function WorkersList({ workers }: { workers: ManagedUser[] }) {
+export default function WorkersList({
+  workers,
+  patients,
+}: {
+  workers: ManagedUser[];
+  patients: Patient[];
+}) {
   const router = useRouter();
-  const [expanded, setExpanded] = useState<number | null>(null);
-  const [patients, setPatients] = useState<Patient[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<number | null>(null);
 
-  async function togglePatients(userId: number) {
-    if (expanded === userId) {
-      setExpanded(null);
-      return;
-    }
-    setExpanded(userId);
-    setError(null);
-    setLoading(true);
-    try {
-      const res = await fetch(`/api/users/${userId}/patients`);
-      const data = (await res.json()) as Patient[] | { error?: string };
-      if (!Array.isArray(data)) {
-        setError(data.error ?? "Could not load patients");
-        setPatients([]);
-      } else {
-        setPatients(data);
-      }
-    } catch {
-      setError("Network error.");
-      setPatients([]);
-    } finally {
-      setLoading(false);
-    }
+  const byWorker = new Map<string, Patient[]>();
+  for (const p of patients) {
+    const key = String(p.workerId ?? "");
+    if (!key) continue;
+    byWorker.set(key, [...(byWorker.get(key) ?? []), p]);
   }
 
   async function toggleActive(user: ManagedUser) {
@@ -53,48 +38,58 @@ export default function WorkersList({ workers }: { workers: ManagedUser[] }) {
   }
 
   return (
-    <div>
-      {error ? <p className="mb-3 text-sm text-red-600">{error}</p> : null}
-      {workers.length === 0 ? (
-        <p className="py-8 text-center text-sm text-slate-400">No health workers onboarded.</p>
-      ) : (
-        <ul className="divide-y divide-slate-100">
-          {workers.map((worker) => (
-            <li key={worker.id}>
-              <div className="flex items-center justify-between py-3">
-                <button
-                  type="button"
-                  onClick={() => togglePatients(worker.id)}
-                  className="flex items-center gap-3 text-left"
-                >
-                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-100 text-sm font-semibold text-emerald-700">
-                    {(worker.username[0] ?? "?").toUpperCase()}
+    <div className="overflow-x-auto">
+      <table className="w-full text-left text-sm">
+        <thead>
+          <tr className="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-400">
+            <th className="py-2 pr-4 font-semibold">Worker</th>
+            <th className="py-2 pr-4 font-semibold">Email</th>
+            <th className="py-2 pr-4 font-semibold">Status</th>
+            <th className="py-2 pr-4 font-semibold">Patients</th>
+            <th className="py-2 pr-4 font-semibold">Villages covered</th>
+            <th className="py-2 text-right font-semibold">Action</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-slate-100">
+          {workers.map((worker) => {
+            const assigned = byWorker.get(String(worker.id)) ?? [];
+            const villages = [
+              ...new Set(
+                assigned.map((p) => String(p.village ?? "")).filter(Boolean),
+              ),
+            ];
+            return (
+              <tr key={worker.id} className="hover:bg-slate-50">
+                <td className="py-3 pr-4">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-100 text-sm font-semibold text-emerald-700">
+                      {(worker.username[0] ?? "?").toUpperCase()}
+                    </div>
+                    <span className="font-medium text-slate-800">{worker.username}</span>
                   </div>
-                  <div>
-                    <p className="flex items-center gap-2 text-sm font-medium text-slate-800">
-                      {worker.username}
-                      {worker.is_active ? <Badge>active</Badge> : <Badge>blocked</Badge>}
-                    </p>
-                    <p className="text-xs text-slate-400">
-                      {worker.email ?? "no email on file"}
-                    </p>
-                  </div>
-                </button>
-                <div className="flex items-center gap-2">
-                  {expanded === worker.id ? (
-                    <button
-                      type="button"
-                      onClick={() => setExpanded(null)}
-                      className="rounded-lg px-3 py-1.5 text-sm font-medium text-slate-500 hover:bg-slate-100"
+                </td>
+                <td className="py-3 pr-4 text-slate-500">{worker.email ?? "—"}</td>
+                <td className="py-3 pr-4">
+                  {worker.is_active ? <Badge>active</Badge> : <Badge>blocked</Badge>}
+                </td>
+                <td className="py-3 pr-4 text-slate-700">{assigned.length}</td>
+                <td className="py-3 pr-4 text-slate-500">
+                  {villages.length > 0 ? villages.join(", ") : "—"}
+                </td>
+                <td className="py-3 text-right">
+                  {assigned.length > 0 ? (
+                    <Link
+                      href={`/patients?worker=${worker.id}`}
+                      className="rounded-lg px-3 py-1.5 text-sm font-medium text-indigo-600 hover:bg-indigo-50"
                     >
-                      Hide patients
-                    </button>
+                      View cases →
+                    </Link>
                   ) : null}
                   <button
                     type="button"
                     disabled={busyId === worker.id}
                     onClick={() => toggleActive(worker)}
-                    className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors disabled:opacity-50 ${
+                    className={`ml-2 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors disabled:opacity-50 ${
                       worker.is_active
                         ? "text-red-600 hover:bg-red-50"
                         : "text-emerald-600 hover:bg-emerald-50"
@@ -102,37 +97,15 @@ export default function WorkersList({ workers }: { workers: ManagedUser[] }) {
                   >
                     {busyId === worker.id ? "…" : worker.is_active ? "Block" : "Unblock"}
                   </button>
-                </div>
-              </div>
-
-              {expanded === worker.id ? (
-                <div className="mb-3 rounded-xl bg-slate-50 p-4">
-                  <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
-                    Patients managed
-                  </p>
-                  {loading ? (
-                    <p className="text-sm text-slate-400">Loading…</p>
-                  ) : patients.length === 0 ? (
-                    <p className="text-sm text-slate-400">No patients on record.</p>
-                  ) : (
-                    <ul className="space-y-1.5">
-                      {patients.map((p) => (
-                        <li key={String(p.id)} className="flex items-center justify-between text-sm">
-                          <span className="text-slate-700">{p.name ?? "Unnamed patient"}</span>
-                          <span className="text-xs text-slate-400">
-                            {p.age != null ? `${p.age} yrs` : ""}
-                            {p.gender ? ` · ${p.gender}` : ""}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              ) : null}
-            </li>
-          ))}
-        </ul>
-      )}
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+      {workers.length === 0 ? (
+        <p className="py-8 text-center text-sm text-slate-400">No health workers onboarded.</p>
+      ) : null}
     </div>
   );
 }

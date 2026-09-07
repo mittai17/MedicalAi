@@ -9,10 +9,14 @@ export default async function WorkersPage() {
   const token = session?.token ?? "";
 
   let workers: Awaited<ReturnType<typeof api.getUsers>> = [];
+  let patients: Awaited<ReturnType<typeof api.getPatients>> = [];
   let error: string | null = null;
 
   try {
-    workers = await api.getUsers(token, "health_worker");
+    [workers, patients] = await Promise.all([
+      api.getUsers(token, "health_worker"),
+      api.getPatients(token),
+    ]);
   } catch (err) {
     error = err instanceof Error ? err.message : "Could not reach the backend";
   }
@@ -23,8 +27,7 @@ export default async function WorkersPage() {
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Health Workers</h1>
           <p className="text-sm text-slate-500">
-            Field clinicians who run screenings on citizens. Click a worker to see the
-            patients they manage.
+            Field clinicians who run screenings on citizens, with their caseload.
           </p>
         </div>
         <AddUser role="health_worker" />
@@ -37,7 +40,7 @@ export default async function WorkersPage() {
             {error}
           </p>
         ) : (
-          <WorkersList workers={workers} />
+          <WorkersList workers={workers} patients={patients} />
         )}
       </Card>
     </div>
