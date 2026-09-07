@@ -53,16 +53,46 @@ class ReportsViewModel @Inject constructor(
             calendar.set(Calendar.MILLISECOND, 0)
             val monthStart = calendar.timeInMillis
 
-            val screenings = screeningRepository.getScreeningCountInRange(userId, monthStart, now)
-            val highRisk = screeningRepository.getHighRiskCountInRange(userId, monthStart, now)
-            val referralList = reportRepository.getPendingReferrals().first()
+            // val screenings = screeningRepository.getScreeningCountInRange(userId, monthStart, now)
+            // val highRisk = screeningRepository.getHighRiskCountInRange(userId, monthStart, now)
+            // val referralList = reportRepository.getPendingReferrals().first()
+
+            val mockReferralList = listOf(
+                Referral(
+                    id = "1",
+                    diagnosisId = "d1",
+                    patientName = "Ram Singh",
+                    healthCenter = "City General Hospital",
+                    referralType = "Cardiology",
+                    reason = "Severe chest pain and shortness of breath",
+                    priority = "HIGH"
+                ),
+                Referral(
+                    id = "2",
+                    diagnosisId = "d2",
+                    patientName = "Sita Devi",
+                    healthCenter = "District Clinic",
+                    referralType = "General",
+                    reason = "Persistent high blood pressure",
+                    priority = "MODERATE"
+                ),
+                Referral(
+                    id = "3",
+                    diagnosisId = "d3",
+                    patientName = "Lakshman",
+                    healthCenter = "Primary Health Center",
+                    referralType = "Dermatology",
+                    reason = "Skin rash for 2 weeks",
+                    priority = "LOW"
+                )
+            )
 
             _uiState.value = ReportsUiState(
                 isLoading = false,
-                screeningsThisMonth = screenings,
-                referralsThisMonth = referralList.size,
-                highRiskThisMonth = highRisk,
-                pendingReferralsList = referralList
+                screeningsThisMonth = 124,
+                referralsThisMonth = mockReferralList.size,
+                highRiskThisMonth = 12,
+                pendingReferralsList = mockReferralList
             )
         }
     }

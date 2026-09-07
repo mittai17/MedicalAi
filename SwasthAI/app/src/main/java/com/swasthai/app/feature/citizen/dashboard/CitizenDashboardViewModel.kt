@@ -77,16 +77,16 @@ class CitizenDashboardViewModel @Inject constructor(
     private fun loadDashboard() {
         viewModelScope.launch {
             val userId = userPreferences.userIdFlow.first() ?: ""
-            val userName = userPreferences.userNameFlow.first() ?: "User"
 
-            // Combine network status and recent screenings
+            // Combine network status, recent screenings, and userName
             val feed = combine(
                 networkMonitor.isOnline,
                 screeningRepository.getRecentScreenings(userId, limit = 5),
-                screeningRepository.getLatestVitals(userId)
-            ) { isOnline, screenings, latestVitals ->
+                screeningRepository.getLatestVitals(userId),
+                userPreferences.userNameFlow
+            ) { isOnline, screenings, latestVitals, userName ->
                 CitizenDashboardUiState(
-                    userName = userName,
+                    userName = userName ?: "User",
                     isOnline = isOnline,
                     recentScreenings = screenings.map { it.toDisplayItem() },
                     latestVitals = latestVitals,

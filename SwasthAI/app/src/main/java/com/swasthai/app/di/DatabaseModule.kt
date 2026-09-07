@@ -10,6 +10,7 @@ import com.swasthai.app.data.local.database.dao.ReportDao
 import com.swasthai.app.data.local.database.dao.ScreeningDao
 import com.swasthai.app.data.local.database.dao.SyncQueueDao
 import com.swasthai.app.data.local.database.dao.UserDao
+import com.swasthai.app.data.local.database.dao.ExerciseDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -67,4 +68,7 @@ object DatabaseModule {
     @Provides
     fun provideConsultationRequestDao(database: SwasthAIDatabase): ConsultationRequestDao =
         database.consultationRequestDao()
+
+    @Provides
+    fun provideExerciseDao(database: SwasthAIDatabase): ExerciseDao = database.exerciseDao()
 }

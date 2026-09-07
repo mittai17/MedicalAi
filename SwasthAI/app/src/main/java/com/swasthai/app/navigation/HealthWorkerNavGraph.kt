@@ -47,7 +47,8 @@ fun NavGraphBuilder.healthWorkerNavGraph(
             onSyncData = { navController.navigate(Screen.SyncData.route) },
             onAlerts = { navController.navigate(Screen.HWAlerts.route) },
             onProfile = { navController.navigate(Screen.HWProfile.route) },
-            onSettings = { navController.navigate(Screen.Settings.route) }
+            onSettings = { navController.navigate(Screen.Settings.route) },
+            onNearbyPatients = { navController.navigate(Screen.PatientList.route) }
         )
     }
 

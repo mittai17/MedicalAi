@@ -13,6 +13,7 @@ import androidx.work.WorkManager
 import com.swasthai.app.core.utils.NetworkMonitor
 import com.swasthai.app.domain.model.UserRole
 import com.swasthai.app.feature.onboarding.LanguageSelectionScreen
+import com.swasthai.app.feature.onboarding.FakeLoginScreen
 import com.swasthai.app.feature.onboarding.RoleSelectionScreen
 import com.swasthai.app.feature.onboarding.SplashScreen
 import com.swasthai.app.feature.onboarding.WelcomeScreen
@@ -82,13 +83,28 @@ fun SwasthAINavHost(
         composable(Screen.RoleSelection.route) {
             RoleSelectionScreen(
                 onContinue = { role ->
-                    val destination = when (role) {
+                    navController.navigate(Screen.FakeLogin.createRoute(role.name))
+                }
+            )
+        }
+
+        composable(Screen.FakeLogin.route) { backStackEntry ->
+            val roleName = backStackEntry.arguments?.getString("role") ?: UserRole.CITIZEN.name
+            val role = try { UserRole.valueOf(roleName) } catch (e: Exception) { UserRole.CITIZEN }
+            
+            FakeLoginScreen(
+                role = role,
+                onLoginSuccess = { loggedInRole ->
+                    val destination = when (loggedInRole) {
                         UserRole.HEALTH_WORKER -> Screen.HWDashboard.route
                         else -> Screen.CitizenHome.route
                     }
                     navController.navigate(destination) {
                         popUpTo(Screen.RoleSelection.route) { inclusive = true }
                     }
+                },
+                onBack = {
+                    navController.popBackStack()
                 }
             )
         }

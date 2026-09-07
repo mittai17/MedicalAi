@@ -1,1 +1,1 @@
-/home/mittai/Documents/medi/MedicalAi/SwasthAI/app/build/intermediates/cxx/Debug/6fk2p6k1/obj/x86
+C:\Users\Administrator\Documents\projects\MedicalAi\SwasthAI\app\build\intermediates\cxx\Debug\6fk2p6k1\obj\x86

@@ -42,6 +42,7 @@ import com.swasthai.app.feature.citizen.connect.ConnectProvidersScreen
 import com.swasthai.app.feature.citizen.connect.OnlineConsultationScreen
 import com.swasthai.app.feature.citizen.dashboard.CitizenDashboardScreen
 import com.swasthai.app.feature.citizen.diagnosis.ScreeningResultScreen
+import com.swasthai.app.feature.citizen.medications.MedicationsScreen
 import com.swasthai.app.feature.citizen.profile.CitizenProfileScreen
 import com.swasthai.app.feature.citizen.profile.EditProfileScreen
 import com.swasthai.app.feature.citizen.records.HealthRecordsScreen
@@ -52,6 +53,7 @@ import com.swasthai.app.feature.citizen.screening.HealthCheckMode
 import com.swasthai.app.feature.citizen.screening.ScreeningViewModel
 import com.swasthai.app.feature.citizen.screening.VitalsInputScreen
 import com.swasthai.app.feature.citizen.tips.HealthTipsScreen
+import com.swasthai.app.feature.citizen.exercise.ExerciseScreen
 import com.swasthai.app.sync.SyncWorker
 
 /**
@@ -131,7 +133,9 @@ fun CitizenMainScreen(
                     onViewAllRecords = { tabNavController.navigateToTab(Screen.HealthRecords.route) },
                     onScreeningDetail = { id ->
                         tabNavController.navigate(Screen.RecordDetail.createRoute(id))
-                    }
+                    },
+                    onNavigateToMedications = { tabNavController.navigate(Screen.Medications.route) },
+                    onNavigateToExercise = { tabNavController.navigate(Screen.Exercise.route) }
                 )
             }
 
@@ -144,6 +148,18 @@ fun CitizenMainScreen(
                     onShareReport = { id ->
                         tabNavController.navigate(Screen.ShareReport.createRoute(id))
                     }
+                )
+            }
+
+            composable(Screen.Medications.route) {
+                MedicationsScreen(
+                    onBack = { tabNavController.popBackStack() }
+                )
+            }
+
+            composable(Screen.Exercise.route) {
+                ExerciseScreen(
+                    onBack = { tabNavController.popBackStack() }
                 )
             }
 
@@ -327,17 +343,7 @@ private fun CitizenBottomTabBar(
                         maxLines = 1
                     )
                 },
-                colors = if (tab == CitizenBottomNav.HEALTH) {
-                    NavigationBarItemDefaults.colors(
-                        selectedIconColor = MaterialTheme.colorScheme.onPrimary,
-                        selectedTextColor = MaterialTheme.colorScheme.onPrimary,
-                        indicatorColor = MaterialTheme.colorScheme.primary,
-                        unselectedIconColor = MaterialTheme.colorScheme.primary,
-                        unselectedTextColor = MaterialTheme.colorScheme.primary
-                    )
-                } else {
-                    NavigationBarItemDefaults.colors()
-                }
+                colors = NavigationBarItemDefaults.colors()
             )
         }
     }
@@ -346,7 +352,7 @@ private fun CitizenBottomTabBar(
 private fun CitizenBottomNav.iconVector(selected: Boolean): ImageVector = when (this) {
         CitizenBottomNav.HOME -> if (selected) Icons.Filled.Home else Icons.Outlined.Home
         CitizenBottomNav.RECORDS -> if (selected) Icons.Filled.Description else Icons.Outlined.Description
-        CitizenBottomNav.HEALTH -> if (selected) Icons.Filled.HealthAndSafety else Icons.Outlined.HealthAndSafety
         CitizenBottomNav.CONNECT -> if (selected) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder
         CitizenBottomNav.AI -> if (selected) Icons.Filled.AutoAwesome else Icons.Filled.AutoAwesome
+        CitizenBottomNav.PROFILE -> if (selected) Icons.Filled.AccountCircle else Icons.Outlined.AccountCircle
     }

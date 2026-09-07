@@ -21,6 +21,8 @@ import com.swasthai.app.data.local.database.entity.SymptomRecordEntity
 import com.swasthai.app.data.local.database.entity.SyncQueueEntity
 import com.swasthai.app.data.local.database.entity.UserEntity
 import com.swasthai.app.data.local.database.entity.VitalsEntity
+import com.swasthai.app.data.local.database.entity.ExerciseSessionEntity
+import com.swasthai.app.data.local.database.dao.ExerciseDao
 
 /**
  * SwasthAI Room Database
@@ -42,9 +44,10 @@ import com.swasthai.app.data.local.database.entity.VitalsEntity
         ReportEntity::class,
         ReferralEntity::class,
         SyncQueueEntity::class,
-        ConsultationRequestEntity::class
+        ConsultationRequestEntity::class,
+        ExerciseSessionEntity::class
     ],
-    version = 3,
+    version = 4,
     exportSchema = true
 )
 abstract class SwasthAIDatabase : RoomDatabase() {
@@ -56,6 +59,7 @@ abstract class SwasthAIDatabase : RoomDatabase() {
     abstract fun referralDao(): ReferralDao
     abstract fun syncQueueDao(): SyncQueueDao
     abstract fun consultationRequestDao(): ConsultationRequestDao
+    abstract fun exerciseDao(): ExerciseDao
 
     companion object {
         const val DATABASE_NAME = "swasthai_database"

@@ -8,6 +8,7 @@ import com.swasthai.app.data.local.database.dao.ReportDao
 import com.swasthai.app.data.local.database.dao.ScreeningDao
 import com.swasthai.app.data.local.database.dao.SyncQueueDao
 import com.swasthai.app.data.local.database.dao.UserDao
+import com.swasthai.app.data.local.database.dao.ExerciseDao
 import com.swasthai.app.data.local.datastore.UserPreferences
 import com.swasthai.app.data.repository.AuthRepositoryImpl
 import com.swasthai.app.data.repository.PatientRepositoryImpl
@@ -16,6 +17,8 @@ import com.swasthai.app.data.repository.ReportRepositoryImpl
 import com.swasthai.app.data.repository.SyncRepositoryImpl
 import com.swasthai.app.data.repository.SyncUploader
 import com.swasthai.app.data.repository.ConsultationRepositoryImpl
+import com.swasthai.app.data.repository.ExerciseRepository
+import com.swasthai.app.data.repository.ExerciseRepositoryImpl
 import com.swasthai.app.domain.repository.AuthRepository
 import com.swasthai.app.domain.repository.PatientRepository
 import com.swasthai.app.domain.repository.ScreeningRepository
@@ -86,4 +89,10 @@ object RepositoryModule {
         userPreferences: UserPreferences
     ): ConsultationRepository =
         ConsultationRepositoryImpl(consultationRequestDao, syncQueueDao, userPreferences)
+
+    @Provides
+    @Singleton
+    fun provideExerciseRepository(
+        exerciseDao: ExerciseDao
+    ): ExerciseRepository = ExerciseRepositoryImpl(exerciseDao)
 }

@@ -223,3 +223,29 @@ data class ConsultationRequest(
     val status: ConsultationRequestStatus = ConsultationRequestStatus.REQUESTED,
     val createdAt: Long = System.currentTimeMillis()
 )
+
+/**
+ * Domain model for a user's medication.
+ */
+data class Medication(
+    val id: String,
+    val name: String,
+    val dosage: String,
+    val frequency: String,
+    val instructions: String = "",
+    val startDate: Long = System.currentTimeMillis(),
+    val endDate: Long? = null,
+    val foodTiming: String = "",
+    val reminderTimes: List<Long> = emptyList()
+)
+
+/**
+ * Domain model for an individual medication dose instance (e.g. 8:00 AM today).
+ */
+data class MedicationDose(
+    val id: String,
+    val medicationId: String,
+    val scheduledTimeMillis: Long,
+    val isTaken: Boolean = false,
+    val takenTimeMillis: Long? = null
+)

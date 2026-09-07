@@ -1,5 +1,3 @@
 # ninja log v5
-0	3153	1788058689743891019	CMakeFiles/swasthai_ai.dir/ai_native.cpp.o	a1865a417c566f5e
-3162	3288	1788058689880890993	/home/mittai/Documents/medi/MedicalAi/SwasthAI/app/build/intermediates/cxx/Debug/6fk2p6k1/obj/armeabi-v7a/libswasthai_ai.so	35eb617b1f124cf1
-10	1681	1788059143702807270	CMakeFiles/swasthai_ai.dir/ai_native.cpp.o	a1865a417c566f5e
-1682	1761	1788059143808807251	/home/mittai/Documents/medi/MedicalAi/SwasthAI/app/build/intermediates/cxx/Debug/6fk2p6k1/obj/armeabi-v7a/libswasthai_ai.so	35eb617b1f124cf1
+15	18819	8101658231864863	CMakeFiles/swasthai_ai.dir/ai_native.cpp.o	d003192a3a96d440
+18873	19861	8101658241225853	C:/Users/Administrator/Documents/projects/MedicalAi/SwasthAI/app/build/intermediates/cxx/Debug/6fk2p6k1/obj/armeabi-v7a/libswasthai_ai.so	44cb0f3d502af8a5

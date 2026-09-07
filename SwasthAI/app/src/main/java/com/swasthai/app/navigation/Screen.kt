@@ -18,6 +18,9 @@ sealed class Screen(val route: String) {
     data object Welcome : Screen("welcome")
     data object LanguageSelection : Screen("language_selection")
     data object RoleSelection : Screen("role_selection")
+    data object FakeLogin : Screen("fake_login/{role}") {
+        fun createRoute(role: String) = "fake_login/$role"
+    }
 
     // ═══════════════════════════════════════
     // CITIZEN ROUTES
@@ -32,6 +35,8 @@ sealed class Screen(val route: String) {
     }
     data object SymptomCheck : Screen("symptom_check")
     data object VoiceCommand : Screen("voice_command")
+    data object Medications : Screen("medications")
+    data object Exercise : Screen("exercise")
     data object ImageCheck : Screen("image_check")
     data object VitalsInput : Screen("vitals_input")
     data object ScreeningResult : Screen("screening_result")
@@ -86,9 +91,9 @@ sealed class Screen(val route: String) {
 enum class CitizenBottomNav(val route: String, val label: String, val icon: String) {
     HOME(Screen.CitizenDashboard.route, "Home", "home"),
     RECORDS(Screen.HealthRecords.route, "Records", "description"),
-    HEALTH(Screen.HealthCheck.route, "Health Check", "health_and_safety"),
     CONNECT(Screen.ConnectProviders.route, "Connect", "favorite"),
-    AI(Screen.AIChat.route, "AI", "auto_awesome")
+    AI(Screen.AIChat.route, "AI", "auto_awesome"),
+    PROFILE(Screen.CitizenProfile.route, "Profile", "account_circle")
 }
 
 /**
