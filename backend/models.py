@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, Float, Text, ForeignKey, JSON
+from sqlalchemy import Column, String, Integer, Float, Text, ForeignKey, JSON, Boolean
 from .database import Base
 
 class User(Base):
@@ -9,6 +9,7 @@ class User(Base):
     password = Column(String, nullable=False)
     email = Column(String, unique=True, index=True)
     role = Column(String, default="worker")  # e.g., citizen, health_worker
+    is_active = Column(Boolean, default=True)  # admin can block/unblock accounts
 
 class Patient(Base):
     __tablename__ = "patients"

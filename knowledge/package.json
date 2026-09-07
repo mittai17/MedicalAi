@@ -1,0 +1,35 @@
+{
+  "name": "@swasthai/knowledge",
+  "version": "1.0.0",
+  "description": "SwasthAI clinical knowledge base and reasoning engine (port of the Android app's ClinicalKnowledge / DiseaseKnowledgeBase / ClinicalReasoningEngine).",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "dev": "tsc -p tsconfig.build.json --watch"
+  },
+  "keywords": [
+    "medical",
+    "clinical",
+    "symptom",
+    "diagnosis",
+    "knowledge-base",
+    "swasthai"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.6.0"
+  }
+}

@@ -8,6 +8,10 @@ class UserRegister(BaseModel):
     email: Optional[EmailStr] = None
     role: Optional[str] = "worker"
 
+class UserUpdate(BaseModel):
+    role: Optional[str] = None
+    is_active: Optional[bool] = None
+
 class UserLogin(BaseModel):
     username: str
     password: str
